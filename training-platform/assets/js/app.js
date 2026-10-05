@@ -434,12 +434,14 @@ function isActive(href) {
   return file === currentFile();
 }
 
-function brandMarkup(cls = '') {
+/** Header/footer logo: the full wordmark when headerShowsName is false, else mark + name. */
+function brandMarkup(cls = '', onDark = false) {
   const b = app.site.brand;
   const showName = b.headerShowsName !== false;
-  const src = safeUrl(showName ? b.logoMark || b.logo : b.logo || b.logoMark);
+  const full = onDark ? b.logoOnDark || b.logo : b.logo;
+  const src = safeUrl(showName ? b.logoMark || full : full || b.logoMark);
   return `<a class="brand ${cls}" href="index.html" aria-label="${esc(tx(b.name))}">
-    ${src ? `<img class="brand__logo${showName ? '' : ' brand__logo--full'}" src="${esc(src)}" alt="" width="36" height="36">` : ''}
+    ${src ? `<img class="brand__logo${showName ? '' : ' brand__logo--full'}" src="${esc(src)}" alt="${showName ? '' : esc(tx(b.name))}"${showName ? ' width="36" height="36"' : ''}>` : ''}
     ${showName ? `<span class="brand__name">${esc(tx(b.name))}</span>` : ''}
   </a>`;
 }
@@ -478,7 +480,7 @@ async function renderHeader() {
             </button>
             <div class="notif__panel" id="notif-panel" hidden></div>
           </div>
-          <a class="btn btn--light btn--sm hide-mobile" href="dashboard.html">${esc(t('nav.start'))}${icon('arrow', 'flip-rtl')}</a>
+          <a class="btn btn--ink btn--sm hide-mobile" href="dashboard.html">${esc(t('nav.start'))}${icon('arrow', 'flip-rtl')}</a>
           <button type="button" class="icon-btn menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="${esc(t('nav.menu'))}">${icon('menu')}</button>
         </div>
       </div>
@@ -585,7 +587,7 @@ function renderFooter() {
   el.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        ${brandMarkup('brand--footer')}
+        ${brandMarkup('brand--footer', true)}
         <p class="muted">${esc(tx(brand.description))}</p>
         <div class="social">${(social || []).map((s) => `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener" class="chip chip--outline">${esc(s.name)}</a>`).join('')}</div>
       </div>
@@ -599,6 +601,7 @@ function renderFooter() {
         <a href="contact.html">${esc(t('footer.contact'))}</a>
         <a href="#chat">${esc(t('footer.assistant'))}</a>
         <a href="certificate.html">${esc(t('footer.certificates'))}</a>
+        <a href="brand.html">${esc(t('footer.brand'))}</a>
       </nav>
       <div class="footer-col">
         <h3>${esc(t('footer.reach'))}</h3>
@@ -660,7 +663,7 @@ export async function setLang(lang) {
 /* ------------------------------------------------------------------ theme */
 function applyTheme(theme = {}) {
   const root = document.documentElement.style;
-  const map = { primary: '--primary', secondary: '--secondary', highlight: '--highlight', background: '--bg' };
+  const map = { primary: '--primary', secondary: '--secondary', highlight: '--highlight', ink: '--ink', background: '--bg' };
   for (const [k, v] of Object.entries(map)) if (theme[k]) root.setProperty(v, theme[k]);
   const fav = safeUrl(app.site?.brand?.favicon);
   if (fav) {
@@ -687,6 +690,10 @@ function setupGlobalHandlers() {
     const onScroll = () => header.classList.toggle('is-scrolled', scrollY > 24);
     addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+    // Expose the real header height (it grows with the announcement bar) to CSS.
+    const setHeight = () => document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    if ('ResizeObserver' in window) new ResizeObserver(setHeight).observe(header);
+    setHeight();
   }
 }
 

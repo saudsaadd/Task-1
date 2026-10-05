@@ -66,7 +66,7 @@ async function render() {
     </div>
     ${done ? '' : `<div class="cert-locked no-print">${icon('lock')}<div style="flex:1"><b>${esc(t('cert.locked'))}</b>
       <ul class="rules" style="margin-top:8px;font-size:14px">${missing.map((m) => `<li>${icon('chevronRight', 'flip-rtl')}<span>${esc(m)}</span></li>`).join('')}</ul>
-      <div class="row" style="margin-top:12px"><a class="btn btn--light btn--sm" href="course.html?id=${encodeURIComponent(course.id)}">${esc(t('cert.goCourse'))}</a>
+      <div class="row" style="margin-top:12px"><a class="btn btn--ink btn--sm" href="course.html?id=${encodeURIComponent(course.id)}">${esc(t('cert.goCourse'))}</a>
       ${course.quizId ? `<a class="btn btn--ghost btn--sm" href="quiz.html?id=${encodeURIComponent(course.quizId)}">${esc(t('course.takeQuiz'))}</a>` : ''}</div></div></div>`}
     <div class="cert-stage">${certificateMarkup({ learner: learnerName(), course, date, id, preview: !done })}</div>
     <p class="muted no-print" style="margin-top:18px;font-size:13px">${esc(t('cert.printHint'))}</p>`;

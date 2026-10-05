@@ -46,7 +46,7 @@ async function render() {
           <p class="muted" style="font-size:14px">${esc(t('common.hours', { n: fmtNum(c.hours) }))} · ${esc(t('common.lessons', { n: fmtNum(c.lessons.length) }))} · ${esc(t(`level.${c.level}`))}</p>
           <div class="row" style="justify-content:space-between;margin-top:auto">
             <span class="price" style="font-size:22px">${esc(fmtPrice(c.price))}</span>
-            <a class="btn btn--light btn--sm" href="checkout.html?course=${encodeURIComponent(c.id)}">${esc(t('pricing.buy'))}${icon('arrow', 'flip-rtl')}</a>
+            <a class="btn btn--ink btn--sm" href="checkout.html?course=${encodeURIComponent(c.id)}">${esc(t('pricing.buy'))}${icon('arrow', 'flip-rtl')}</a>
           </div>
         </div>
       </article>`).join('')}</div>`;

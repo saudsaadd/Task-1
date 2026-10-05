@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>أكاديمية مدار · Madar Academy</title>
+<title>أجيليكس · Agilix — تعلّم بمرونة</title>
 <meta name="description" content="منصة تدريب احترافية: بث مباشر، دروس مرئية، اختبارات تفاعلية، شهادات إتمام، ومساعد ذكي.">
-<meta name="theme-color" content="#050507">
+<meta name="theme-color" content="#F6F7FB">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Madar Academy · أكاديمية مدار">
+<meta property="og:title" content="Agilix · أجيليكس — Learn agile. Grow faster.">
 <meta property="og:description" content="Live sessions, video lessons, smart quizzes, certificates and an AI assistant.">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,9 +33,14 @@
 <style>
   .hero {
     --hero-pad: clamp(16px, 4vw, 48px);
+    --h-bg: #f6f7fb;
+    --h-ink: #0e1630;
+    --h-ink-2: #3f4866;
+    --h-muted: #5e6785;
+    --h-line: rgba(14, 22, 48, .14);
     position: relative; isolation: isolate; overflow: hidden;
     height: 100vh; height: 100svh; min-height: 640px;
-    background: #050507; color: #fff;
+    background: var(--h-bg); color: var(--h-ink);
     font-family: 'Poppins', 'Tajawal', sans-serif;
   }
   html[lang="ar"] .hero { font-family: 'Tajawal', 'Poppins', sans-serif; }
@@ -49,46 +54,46 @@
   .hero__vignette {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-      radial-gradient(130% 95% at 50% 46%, transparent 52%, rgba(0,0,0,.72)),
-      linear-gradient(180deg, rgba(5,5,7,.6), transparent 20%, transparent 64%, rgba(5,5,7,.92));
+      radial-gradient(130% 95% at 50% 46%, transparent 58%, rgba(14,22,48,.07)),
+      linear-gradient(180deg, rgba(246,247,251,.9), rgba(246,247,251,0) 20%, rgba(246,247,251,0) 66%, rgba(246,247,251,.94));
   }
 
   /* Fallback when WebGL is unavailable */
   .hero__fallback { position: absolute; inset: 0; z-index: 0; display: none; place-items: center; }
   .hero--fallback .hero__fallback { display: grid; }
   .hero__fallback-text {
-    font-weight: 800; font-size: clamp(56px, 13vw, 220px); letter-spacing: -.05em; line-height: .9; text-align: center;
-    text-transform: uppercase; color: #fff; padding-inline: 4vw;
+    font-weight: 800; font-size: clamp(56px, 15vw, 240px); letter-spacing: -.05em; line-height: .9; text-align: center;
+    text-transform: uppercase; color: var(--h-ink); padding-inline: 4vw;
   }
   html[lang="ar"] .hero__fallback-text { text-transform: none; letter-spacing: 0; line-height: 1.1; }
   .hero__fallback-cube {
     position: absolute; width: min(36vh, 46vw); aspect-ratio: 1; border-radius: 18%;
-    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
-    border: 1px solid rgba(255,255,255,.35);
-    backdrop-filter: blur(6px) saturate(160%); -webkit-backdrop-filter: blur(6px) saturate(160%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 40px 120px -20px rgba(139,124,255,.55);
+    background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.25));
+    border: 1px solid rgba(255,255,255,.95);
+    backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%);
+    box-shadow: inset 0 1px 0 #fff, 0 50px 90px -40px rgba(14,22,48,.45);
     display: grid; place-items: center; transform: rotate(-8deg);
   }
-  .hero__fallback-cube img { width: 54%; height: 54%; transform: rotate(8deg); }
+  .hero__fallback-cube img { width: 50%; height: 50%; transform: rotate(8deg); }
 
   /* UI layer */
   .hero__ui {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
     display: grid; grid-template-rows: auto 1fr auto;
-    padding: calc(76px + clamp(18px, 3vh, 36px)) var(--hero-pad) clamp(22px, 4.5vh, 48px);
+    padding: calc(var(--header-h, 76px) + clamp(14px, 2.6vh, 32px)) var(--hero-pad) clamp(22px, 4.5vh, 48px);
   }
   .hero__ui a, .hero__ui button { pointer-events: auto; }
   .hero__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .hero__eyebrow {
     display: inline-flex; align-items: center; gap: 12px;
-    font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.72);
+    font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--h-ink-2);
   }
-  html[lang="ar"] .hero__eyebrow { letter-spacing: 0; font-size: 14px; }
-  .hero__eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(255,255,255,.12), 0 0 18px #fff; }
+  html[lang="ar"] .hero__eyebrow { letter-spacing: 0; font-size: 15px; }
+  .hero__eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #ff6b3d; box-shadow: 0 0 0 5px rgba(255,107,61,.18); }
 
   .hero__bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
-  .hero__copy { max-width: 470px; display: grid; gap: 22px; }
-  .hero__tagline { margin: 0; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.6; color: rgba(255,255,255,.78); font-weight: 400; }
+  .hero__copy { max-width: 480px; display: grid; gap: 22px; }
+  .hero__tagline { margin: 0; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.65; color: var(--h-ink-2); font-weight: 400; }
   html[lang="ar"] .hero__tagline { font-size: clamp(16px, 1.35vw, 19px); }
   .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .hero__btn {
@@ -98,30 +103,31 @@
   }
   html[dir="rtl"] .hero__btn { padding: 0 26px 0 10px; }
   .hero__btn:hover { transform: translateY(-2px); }
-  .hero__btn--solid { background: #fff; color: #050507; box-shadow: 0 18px 50px -18px rgba(139,124,255,.9); }
-  .hero__btn--solid:hover { box-shadow: 0 22px 60px -16px rgba(139,124,255,1); }
-  .hero__btn--solid .hero__btn-icon { background: #050507; color: #fff; }
+  .hero__btn--solid { background: #2e5bff; color: #fff; box-shadow: 0 18px 40px -16px rgba(46,91,255,.75); }
+  .hero__btn--solid:hover { background: #2449e0; box-shadow: 0 22px 46px -16px rgba(46,91,255,.85); }
+  .hero__btn--solid .hero__btn-icon { background: #fff; color: #2e5bff; }
   .hero__btn--glass {
-    color: #fff; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18);
+    color: var(--h-ink); background: rgba(255,255,255,.72); border: 1px solid rgba(14,22,48,.1);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 0 26px 0 10px;
+    box-shadow: 0 10px 30px -18px rgba(14,22,48,.35);
   }
   html[dir="rtl"] .hero__btn--glass { padding: 0 10px 0 26px; }
-  .hero__btn--glass:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.32); }
-  .hero__btn--glass .hero__btn-icon { background: rgba(255,255,255,.14); }
+  .hero__btn--glass:hover { background: #fff; border-color: rgba(14,22,48,.18); }
+  .hero__btn--glass .hero__btn-icon { background: rgba(46,91,255,.1); color: #2e5bff; }
   .hero__btn-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; flex: none; }
   .hero__btn-icon svg { width: 16px; height: 16px; }
   html[dir="rtl"] .hero__btn--solid .hero__btn-icon svg { transform: scaleX(-1); }
 
   .hero__hint {
-    display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,.62);
+    display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: var(--h-muted);
     transition: opacity .6s, transform .6s;
   }
   .hero__hint-icon {
-    position: relative; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.22);
+    position: relative; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--h-line); background: rgba(255,255,255,.6); color: var(--h-ink);
   }
-  .hero__hint-icon svg { width: 20px; height: 20px; animation: hero-swipe 2.6s ease-in-out infinite; }
-  .hero__hint-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.18); animation: hero-spin 14s linear infinite; }
+  .hero__hint-icon svg { width: 19px; height: 19px; animation: hero-swipe 2.6s ease-in-out infinite; }
+  .hero__hint-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed var(--h-line); animation: hero-spin 14s linear infinite; }
   .hero.has-interacted .hero__hint { opacity: .0; transform: translateY(6px); }
   @keyframes hero-swipe { 0%, 100% { transform: translateX(-4px) rotate(-6deg); } 50% { transform: translateX(4px) rotate(6deg); } }
   @keyframes hero-spin { to { transform: rotate(360deg); } }
@@ -132,35 +138,36 @@
     display: grid; justify-items: end; gap: 18px; width: 180px; text-align: end; pointer-events: auto;
   }
   .hero__num { display: grid; justify-items: end; gap: 10px; font-variant-numeric: tabular-nums; }
-  .hero__num-current { position: relative; height: 1em; overflow: hidden; font-size: 54px; font-weight: 600; line-height: 1; letter-spacing: -.04em; font-family: 'Poppins', sans-serif; }
+  .hero__num-current { position: relative; height: 1em; overflow: hidden; font-size: 54px; font-weight: 600; line-height: 1; letter-spacing: -.04em; font-family: 'Poppins', sans-serif; color: var(--h-ink); }
   .hero__num-current span { display: block; transition: transform .6s cubic-bezier(.2,.7,.2,1), opacity .6s; }
-  .hero__num-rule { width: 44px; height: 1px; background: rgba(255,255,255,.4); }
-  .hero__num-total { font-size: 14px; color: rgba(255,255,255,.5); font-family: 'Poppins', sans-serif; letter-spacing: .1em; }
+  .hero__num-rule { width: 44px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #2e5bff, #14b8c4); }
+  .hero__num-total { font-size: 14px; color: var(--h-muted); font-family: 'Poppins', sans-serif; letter-spacing: .1em; }
   .hero__track { display: grid; gap: 6px; }
-  .hero__track i { display: block; width: 3px; height: 14px; border-radius: 3px; background: rgba(255,255,255,.18); justify-self: end; transition: height .5s cubic-bezier(.2,.7,.2,1), background .5s; }
-  .hero__track i.is-active { height: 34px; background: linear-gradient(180deg, #FF6BB3, #8B7CFF, #4FD1E8); }
-  .hero__pillar { display: grid; gap: 4px; text-decoration: none; color: #fff; transition: opacity .45s, transform .45s; }
+  .hero__track i { display: block; width: 3px; height: 14px; border-radius: 3px; background: rgba(14,22,48,.15); justify-self: end; transition: height .5s cubic-bezier(.2,.7,.2,1), background .5s; }
+  .hero__track i.is-active { height: 34px; background: linear-gradient(180deg, #2e5bff, #14b8c4); }
+  .hero__pillar { display: grid; gap: 4px; text-decoration: none; color: var(--h-ink); transition: opacity .45s, transform .45s; }
   .hero__pillar b { font-size: 16px; font-weight: 600; }
-  .hero__pillar span { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.6); }
-  .hero__pillar:hover b { text-decoration: underline; text-underline-offset: 4px; }
+  .hero__pillar span { font-size: 13px; line-height: 1.5; color: var(--h-muted); }
+  .hero__pillar:hover b { color: #2e5bff; }
   .hero__pillar.is-changing { opacity: 0; transform: translateY(8px); }
   .hero__arrows { display: flex; gap: 8px; }
   .hero__arrow {
     display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
-    color: #fff; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.18);
-    transition: background .25s, border-color .25s, transform .25s;
+    color: var(--h-ink); background: rgba(255,255,255,.75); border: 1px solid var(--h-line);
+    box-shadow: 0 8px 20px -14px rgba(14,22,48,.5);
+    transition: background .25s, border-color .25s, transform .25s, color .25s;
   }
-  .hero__arrow:hover { background: #fff; color: #050507; border-color: #fff; }
+  .hero__arrow:hover { background: var(--h-ink); color: #fff; border-color: var(--h-ink); }
   .hero__arrow:active { transform: scale(.94); }
   .hero__arrow svg { width: 18px; height: 18px; }
 
   .hero__scroll {
     position: absolute; z-index: 3; bottom: clamp(22px, 4.5vh, 48px); left: 50%; transform: translateX(-50%);
-    display: grid; justify-items: center; gap: 10px; color: rgba(255,255,255,.55); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; text-decoration: none;
+    display: grid; justify-items: center; gap: 10px; color: var(--h-muted); font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; text-decoration: none;
   }
   html[lang="ar"] .hero__scroll { letter-spacing: 0; font-size: 13px; }
-  .hero__scroll i { position: relative; width: 1px; height: 42px; background: rgba(255,255,255,.18); overflow: hidden; }
-  .hero__scroll i::after { content: ""; position: absolute; inset-inline: 0; top: -40%; height: 40%; background: #fff; animation: hero-drop 2.2s cubic-bezier(.6,0,.2,1) infinite; }
+  .hero__scroll i { position: relative; width: 1px; height: 42px; background: var(--h-line); overflow: hidden; }
+  .hero__scroll i::after { content: ""; position: absolute; inset-inline: 0; top: -40%; height: 40%; background: #2e5bff; animation: hero-drop 2.2s cubic-bezier(.6,0,.2,1) infinite; }
   @keyframes hero-drop { to { top: 110%; } }
 
   @media (max-width: 1024px) {
@@ -169,7 +176,7 @@
   }
   @media (max-width: 760px) {
     .hero { min-height: 600px; }
-    .hero__ui { grid-template-rows: auto 1fr auto auto; padding-top: calc(76px + 12px); }
+    .hero__ui { grid-template-rows: auto 1fr auto auto; padding-top: calc(var(--header-h, 76px) + 12px); padding-bottom: 88px; }
     .hero__bottom { grid-row: 4; flex-direction: column; align-items: stretch; gap: 18px; }
     .hero__copy { max-width: none; gap: 16px; }
     .hero__actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
@@ -181,7 +188,8 @@
     .hero__counter {
       position: static; transform: none; grid-row: 3; width: auto; margin-bottom: 18px;
       grid-template-columns: auto 1fr auto; align-items: center; justify-items: start; text-align: start; gap: 14px;
-      padding: 12px 12px 12px 16px; border-radius: 20px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      padding: 12px 12px 12px 16px; border-radius: 20px; background: rgba(255,255,255,.78); border: 1px solid rgba(14,22,48,.08);
+      box-shadow: 0 16px 40px -24px rgba(14,22,48,.45);
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     }
     html[dir="rtl"] .hero__counter { padding: 12px 16px 12px 12px; }
@@ -194,22 +202,28 @@
     .hero__pillar span { font-size: 12px; }
     .hero__arrow { width: 38px; height: 38px; }
   }
+  @media (max-width: 420px) {
+    .hero__btn { padding-inline: 14px 6px; font-size: 13.5px; height: 48px; }
+    html[dir="rtl"] .hero__btn { padding-inline: 14px 6px; }
+    .hero__btn--glass, html[dir="rtl"] .hero__btn--glass { padding-inline: 6px 14px; }
+    .hero__btn-icon { width: 32px; height: 32px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .hero__hint-icon svg, .hero__hint-icon::after, .hero__scroll i::after { animation: none; }
   }
 
-  /* Stats band under the hero */
-  .stats-band { border-block: 1px solid var(--border); background: rgba(255,255,255,.012); }
+  /* Sections under the hero */
+  .stats-band { border-block: 1px solid var(--border); background: var(--surface); }
   .stats-band__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .stat { padding: clamp(22px, 3vw, 36px) 12px; text-align: center; display: grid; gap: 2px; }
   .stat + .stat { border-inline-start: 1px solid var(--border); }
-  .stat b { font-size: clamp(28px, 3.4vw, 44px); font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
+  .stat b { font-size: clamp(28px, 3.4vw, 44px); font-weight: 700; letter-spacing: -.03em; line-height: 1.1; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .stat span { color: var(--muted); font-size: 14px; }
   @media (max-width: 640px) { .stats-band__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat:nth-child(3) { border-inline-start: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--border); } }
 
-  .feature { position: relative; display: grid; gap: 14px; align-content: start; padding: 28px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); transition: background .3s, border-color .3s, transform .4s var(--ease); }
-  .feature:hover { background: var(--surface-2); border-color: var(--border-strong); transform: translateY(-3px); }
-  .feature__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid var(--border); }
+  .feature { --c: var(--primary); position: relative; display: grid; gap: 14px; align-content: start; padding: 28px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: box-shadow .3s, border-color .3s, transform .4s var(--ease); }
+  .feature:hover { box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--c) 30%, var(--border)); transform: translateY(-3px); }
+  .feature__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: color-mix(in srgb, var(--c) 12%, #fff); color: color-mix(in srgb, var(--c) 82%, #000); }
   .feature__icon .icon { width: 24px; height: 24px; }
   .feature h3 { font-size: 19px; font-weight: 600; }
   .feature p { color: var(--muted); font-size: 15px; }
@@ -217,8 +231,10 @@
 
   .experience { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; align-items: stretch; }
   @media (max-width: 960px) { .experience { grid-template-columns: minmax(0, 1fr); } }
-  .cta-band { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-xl); padding: clamp(36px, 6vw, 80px); text-align: center; display: grid; justify-items: center; gap: 20px; border: 1px solid var(--border-strong); background: radial-gradient(80% 120% at 50% 0%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 70%), var(--bg-elev); }
-  .cta-band .glow-orb { width: 360px; height: 360px; bottom: -220px; left: 50%; margin-left: -180px; background: var(--secondary); opacity: .25; }
+  .cta-band { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-xl); padding: clamp(36px, 6vw, 80px); text-align: center; display: grid; justify-items: center; gap: 20px; background: radial-gradient(70% 120% at 15% 0%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 60%), radial-gradient(60% 100% at 100% 100%, color-mix(in srgb, var(--secondary) 45%, transparent), transparent 60%), var(--ink); box-shadow: 0 40px 90px -40px rgba(14,22,48,.6); }
+  .cta-band .eyebrow { color: #cbd2e6; }
+  .cta-band .lead { color: var(--text-2); }
+  .cta-band .glow-orb { width: 360px; height: 360px; bottom: -220px; left: 50%; margin-left: -180px; background: var(--highlight); opacity: .3; }
 </style>
 </head>
 <body data-page="home">
@@ -303,15 +319,15 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 const MODEL_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb';
 
 // Built-in defaults so the hero works on its own; data/site.json overrides them.
-const DEFAULT_LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512"><defs><linearGradient id="r" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF6BB3"/><stop offset=".5" stop-color="#8B7CFF"/><stop offset="1" stop-color="#4FD1E8"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#r)" stroke-width="4.5"/><path d="M19.5 42.5V22.5L32 35l12.5-12.5v20" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50.4" cy="13.6" r="6.4" fill="#050507"/><circle cx="50.4" cy="13.6" r="4.2" fill="#fff"/></svg>');
+const DEFAULT_LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512"><defs><linearGradient id="agx-tile" x1="4" y1="60" x2="60" y2="4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2E5BFF"/><stop offset="1" stop-color="#14B8C4"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#agx-tile)"/><path d="M16.5 37.5 32 16l15.5 21.5" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.5 49 32 35.5 41.5 49" fill="none" stroke="#FF6B3D" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 
 let config = {
-  brand: { name: { ar: 'أكاديمية مدار', en: 'Madar Academy' }, logoMark: DEFAULT_LOGO },
-  theme: { primary: '#8B7CFF', secondary: '#4FD1E8', highlight: '#FF6BB3' },
+  brand: { name: { ar: 'أجيليكس', en: 'Agilix' }, shortName: { ar: 'أجيليكس', en: 'AGILIX' }, logoMark: DEFAULT_LOGO },
+  theme: { primary: '#2E5BFF', secondary: '#14B8C4', highlight: '#FF6B3D', ink: '#0E1630', background: '#F6F7FB' },
   hero: {
     model: MODEL_URL,
-    headline: { ar: 'عالم المهارات', en: 'Skill World' },
-    eyebrow: { ar: 'منصة التدريب الاحترافي', en: 'Professional training platform' },
+    headline: { ar: 'أجيليكس', en: 'Agilix' },
+    eyebrow: { ar: 'تعلّم بمرونة، وتقدّم أسرع', en: 'Learn agile. Grow faster.' },
     tagline: { ar: 'تعلّم بالممارسة: جلسات مباشرة، مسارات مرئية، اختبارات ذكية وشهادات معتمدة.', en: 'Learn by doing: live sessions, video tracks, smart quizzes and certified results.' },
     primaryCta: { label: { ar: 'استكشف الدورات', en: 'Explore courses' }, href: 'courses.html' },
     secondaryCta: { label: { ar: 'شاهد المقدمة', en: 'Watch intro' }, href: 'courses.html' },
@@ -344,7 +360,8 @@ let refreshText = () => {};
 function renderCopy() {
   const h = config.hero;
   const q = (k) => hero.querySelector(`[data-hero="${k}"]`);
-  q('title').textContent = `${pick(h.headline)} · ${pick(config.brand.name)}`;
+  const name = pick(config.brand.name), head = pick(h.headline);
+  q('title').textContent = head === name ? `${name} · ${pick(h.eyebrow)}` : `${head} · ${name}`;
   q('headline').textContent = pick(h.headline);
   q('eyebrow').textContent = pick(h.eyebrow);
   q('tagline').textContent = pick(h.tagline);
@@ -417,7 +434,7 @@ try {
 if (renderer) initScene();
 
 function initScene() {
-  renderer.setClearColor(0x050507, 1);
+  renderer.setClearColor(new THREE.Color(config.theme.background || '#F6F7FB'), 1);
   const maxDpr = coarse ? 1.5 : 2;
   const SAMPLES = coarse ? 8 : 14;
 
@@ -440,16 +457,15 @@ function initScene() {
   function drawLogo(img) {
     const c = logoCanvas.getContext('2d');
     c.clearRect(0, 0, 1024, 1024);
-    const glow = c.createRadialGradient(512, 512, 0, 512, 512, 512);
-    glow.addColorStop(0, 'rgba(255,255,255,0.16)');
-    glow.addColorStop(0.55, 'rgba(255,255,255,0.04)');
-    glow.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = glow;
-    c.fillRect(0, 0, 1024, 1024);
     if (img) {
-      const s = 700 / Math.max(img.naturalWidth || 1, img.naturalHeight || 1);
-      const w = (img.naturalWidth || 700) * s, h = (img.naturalHeight || 700) * s;
+      const s = 640 / Math.max(img.naturalWidth || 1, img.naturalHeight || 1);
+      const w = (img.naturalWidth || 640) * s, h = (img.naturalHeight || 640) * s;
+      c.save();
+      c.shadowColor = 'rgba(14, 22, 48, 0.32)';
+      c.shadowBlur = 60;
+      c.shadowOffsetY = 28;
       c.drawImage(img, 512 - w / 2, 512 - h / 2, w, h);
+      c.restore();
     }
     logoTex.needsUpdate = true;
   }
@@ -472,7 +488,10 @@ function initScene() {
     uTime: { value: 0 },
     uC1: { value: col(config.theme.primary || '#8B7CFF') },
     uC2: { value: col(config.theme.secondary || '#4FD1E8') },
-    uC3: { value: col(config.theme.highlight || '#FF6BB3') },
+    uC3: { value: col(config.theme.highlight || '#FF6B3D') },
+    uBase: { value: col(config.theme.background || '#F6F7FB') },
+    uRim: { value: col(config.theme.ink || '#0E1630') },
+    uShadow: { value: new THREE.Vector4(0.5, 0.2, 0.2, 0.0) },
     uCenter: { value: new THREE.Vector3() },
     uLogoSize: { value: 1 },
     uLogoMix: { value: 0 },
@@ -481,8 +500,8 @@ function initScene() {
     uRefract: { value: 0.32 },
     uChroma: { value: 0.09 },
     uLight: { value: new THREE.Vector3(-0.55, 0.85, 0.75).normalize() },
-    uShininess: { value: 90 },
-    uFresnel: { value: 4.0 }
+    uShininess: { value: 110 },
+    uFresnel: { value: 3.2 }
   };
 
   // Background colour function shared by the backdrop and the back-face pass.
@@ -490,7 +509,8 @@ function initScene() {
     uniform sampler2D uText;
     uniform vec2 uRes;
     uniform float uTime;
-    uniform vec3 uC1, uC2, uC3;
+    uniform vec3 uC1, uC2, uC3, uBase;
+    uniform vec4 uShadow;   // xy = centre (uv), z = radius (fraction of height), w = strength
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     vec3 bgColor(vec2 uv) {
       vec2 p = (uv - 0.5) * vec2(uRes.x / uRes.y, 1.0);
@@ -498,10 +518,12 @@ function initScene() {
       vec2 o1 = vec2(cos(t) * 0.42, sin(t * 1.3) * 0.16);
       vec2 o2 = vec2(cos(t * 0.8 + 2.1) * 0.46, sin(t * 1.1 + 1.0) * 0.2);
       vec2 o3 = vec2(cos(t * 0.6 + 4.2) * 0.36, sin(t * 0.9 + 3.0) * 0.22);
-      vec3 c = vec3(0.016, 0.016, 0.024);
-      c += uC1 * 0.17 * exp(-dot(p - o1, p - o1) * 5.5);
-      c += uC2 * 0.12 * exp(-dot(p - o2, p - o2) * 6.5);
-      c += uC3 * 0.11 * exp(-dot(p - o3, p - o3) * 7.5);
+      vec3 c = uBase;
+      c = mix(c, uC1, 0.16 * exp(-dot(p - o1, p - o1) * 5.0));
+      c = mix(c, uC2, 0.14 * exp(-dot(p - o2, p - o2) * 6.0));
+      c = mix(c, uC3, 0.10 * exp(-dot(p - o3, p - o3) * 7.0));
+      vec2 sd = (uv - uShadow.xy) * vec2(uRes.x / uRes.y, 1.0) / vec2(uShadow.z, uShadow.z * 0.24);
+      c *= 1.0 - uShadow.w * exp(-dot(sd, sd) * 1.6);
       vec4 txt = texture2D(uText, clamp(uv, 0.0, 1.0));
       return mix(c, txt.rgb, txt.a);
     }`;
@@ -565,7 +587,7 @@ function initScene() {
           acc += bgColor(uv + R.xy * aspect * (uRefract + x * uChroma)) * w;
           wsum += w;
         }
-        gl_FragColor = vec4(acc / wsum * 0.92, 1.0);
+        gl_FragColor = vec4(acc / wsum * vec3(0.93, 0.95, 0.985), 1.0);
       }`
   });
 
@@ -583,7 +605,7 @@ function initScene() {
       uniform vec3 uCenter;
       uniform float uLogoSize, uLogoMix;
       uniform float uIorR, uIorB, uRefract, uChroma, uShininess, uFresnel;
-      uniform vec3 uLight;
+      uniform vec3 uLight, uRim;
       ${SPECTRAL}
       vec3 sampleAt(vec2 uv, vec3 P, vec3 R) {
         vec3 c = texture2D(uScene, clamp(uv, 0.0, 1.0)).rgb;
@@ -621,9 +643,10 @@ function initScene() {
                    + pow(max(dot(N, H2), 0.0), uShininess * 0.6) * 0.25;
         vec3 Rf = reflect(V, N);
         col += smoothstep(0.15, 1.0, Rf.y) * 0.06;
-        col = mix(col, vec3(1.0), fres * 0.42);
+        col = mix(col, uRim, fres * 0.38);
+        col = mix(col, vec3(1.0), pow(fres, 3.0) * 0.35);
         col += spec;
-        col *= vec3(0.975, 0.985, 1.0);
+        col *= vec3(0.965, 0.978, 1.0);
         gl_FragColor = vec4(col, 1.0);
       }`
   });
@@ -730,19 +753,19 @@ function initScene() {
 
     // Hairline guides and micro labels — subtle structure for the glass to bend.
     tctx.save();
-    tctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    tctx.strokeStyle = 'rgba(14,22,48,0.07)';
     tctx.lineWidth = Math.max(1, dpr);
     const gy1 = Math.round(top - ch * 0.045), gy2 = Math.round(top + blockH + ch * 0.045);
     for (const y of [gy1, gy2]) { tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(cw, y); tctx.stroke(); }
     for (const fx of [0.25, 0.5, 0.75]) { tctx.beginPath(); tctx.moveTo(Math.round(cw * fx), 0); tctx.lineTo(Math.round(cw * fx), ch); tctx.stroke(); }
     tctx.font = `500 ${Math.round(11 * dpr)}px "Poppins", sans-serif`;
     if ('letterSpacing' in tctx) tctx.letterSpacing = `${2.5 * dpr}px`;
-    tctx.fillStyle = 'rgba(255,255,255,0.38)';
+    tctx.fillStyle = 'rgba(14,22,48,0.45)';
     tctx.direction = 'ltr';
     tctx.textAlign = 'left';
     tctx.fillText('(01)', left, gy1 - 10 * dpr);
     tctx.textAlign = 'right';
-    tctx.fillText(String(pick(config.brand.shortName || config.brand.name)).toUpperCase(), right, gy1 - 10 * dpr);
+    tctx.fillText('TRAIN · TEST · CERTIFY', right, gy1 - 10 * dpr);
     tctx.textAlign = 'left';
     tctx.fillText('LIVE · VIDEO · QUIZ', left, gy2 + 22 * dpr);
     tctx.textAlign = 'right';
@@ -753,7 +776,7 @@ function initScene() {
     setFont(size);
     tctx.direction = ar ? 'rtl' : 'ltr';
     tctx.textAlign = 'center';
-    tctx.fillStyle = '#ffffff';
+    tctx.fillStyle = config.theme.ink || '#0E1630';
     lines.forEach((l, i) => tctx.fillText(l, cw / 2, top + asc + i * lineH));
     textTex.needsUpdate = true;
   }
@@ -788,6 +811,7 @@ function initScene() {
   glass.quaternion.copy(faceQuat(0));
 
   const tmpV = new THREE.Vector3();
+  const shadowPt = new THREE.Vector3();
   function frontFace() {
     let best = activeFace, bestZ = tmpV.copy(FACES[activeFace]).applyQuaternion(glass.quaternion).z + 0.06;
     FACES.forEach((n, i) => {
@@ -884,12 +908,15 @@ function initScene() {
     pivot.rotation.set(hover.y * 0.1, hover.x * 0.14, 0);
     const bob = reduceMotion ? 0 : Math.sin(now / 1600) * 0.035;
     pivot.position.y = bob + visH * shift;
+    // Contact shadow under the cube (screen space, used by the backdrop shader).
+    shadowPt.set(0, visH * shift - baseScale * 0.98, 0).project(camera);
+    uniforms.uShadow.value.set(shadowPt.x * 0.5 + 0.5, shadowPt.y * 0.5 + 0.5, (baseScale * 0.62) / visH, 0.24 - bob * 1.2);
     glass.scale.setScalar(baseScale);
 
     // Logo plane size & position (view space).
     glass.updateMatrixWorld();
     uniforms.uCenter.value.setFromMatrixPosition(glass.matrixWorld).applyMatrix4(camera.matrixWorldInverse);
-    uniforms.uLogoSize.value = baseScale * 0.84;
+    uniforms.uLogoSize.value = baseScale * 0.62;
     uniforms.uLogoMix.value = ease(Math.min(1, Math.max(0, (now - bornAt - 250) / 1300)));
 
     const face = frontFace();

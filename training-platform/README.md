@@ -1,4 +1,4 @@
-# منصة التدريب: الواجهة الأمامية (Training Platform Front-end)
+# أجيليكس Agilix: منصة التدريب (الواجهة الأمامية)
 
 واجهة منصة تدريب كاملة بالعربية والإنجليزية، جاهزة للنشر على **Vercel** بلا خطوة بناء (Build).
 كل النصوص والروابط والدورات والاختبارات والأسعار موجودة في ملفات **JSON** داخل مجلد `data/`، فتعدّلها دون لمس الكود.
@@ -84,14 +84,22 @@ npx vercel dev
 | `data/student.json` | بيانات الطالب التجريبي في لوحة التحكم (`seedDemoData: false` لإيقافها) |
 | `data/i18n/ar.json` و `en.json` | نصوص الأزرار والعناوين الثابتة في الواجهة |
 
-### الهوية البصرية والشعار
-- **الشعار:** استبدل `assets/img/logo-mark.svg` بشعارك (أو ضع مسار ملفك في `brand.logoMark`). هذا الشعار يظهر في الشريط العلوي وفي الشهادة **وداخل المكعب الزجاجي**. الأفضل: ملف SVG أو PNG مربع بخلفية شفافة، وألوان فاتحة لأن خلفية الواجهة سوداء.
-- **أيقونة المتصفح:** `assets/img/favicon.svg`.
-- **الألوان:** `site.json ← theme` (`primary` اللون الرئيسي، `secondary` و`highlight` للتدرجات والتوهج).
-- **العنوان الضخم خلف المكعب:** `site.json ← hero.headline`.
-- إن كان شعارك يتضمن الاسم كاملًا، أضف `"headerShowsName": false` داخل `brand` ليظهر الشعار وحده في الشريط العلوي.
+### الهوية البصرية لأجيليكس
+دليل الهوية الكامل متاح داخل الموقع في صفحة **`brand.html`** (الشعارات للتحميل، الألوان، الخطوط، قواعد الاستخدام).
 
-> الشعار الحالي (مدار) والاسم «أكاديمية مدار» مؤقتان؛ لم يصلني ملف الشعار المرفق، لذلك صُمّم كل شيء ليُستبدل من ملف واحد.
+| العنصر | القيمة |
+|---|---|
+| الفكرة | سهمان متتاليان نحو الأعلى يشكّلان حرف «A» مجرّدًا: تقدّم مرحلة بعد مرحلة (Agile). السهم المرجاني هو خطوة المتعلّم التالية، وتكرّره نقطتا الحرف i في الاسم |
+| الشعار الكامل | `assets/img/logo.svg` (للخلفيات الفاتحة)، و`assets/img/logo-white.svg` (للخلفيات الداكنة) |
+| الرمز / الأيقونة | `assets/img/logo-mark.svg` و`assets/img/favicon.svg` (يظهر داخل المكعب الزجاجي وفي الشهادة) |
+| الألوان | أزرق أجيليكس `#2E5BFF` · فيروزي `#14B8C4` · مرجاني `#FF6B3D` · حبري `#0E1630` · سحابي `#F6F7FB` · أبيض `#FFFFFF` |
+| الخطوط | Poppins للاتيني، Tajawal للعربي |
+| الشعار اللفظي | «تعلّم بمرونة، وتقدّم أسرع» / “Learn agile. Grow faster.” |
+
+- **تغيير الألوان:** `site.json ← theme` (`primary` و`secondary` و`highlight` و`ink` و`background`).
+- **العنوان الضخم خلف المكعب:** `site.json ← hero.headline`.
+- **تغيير الشعار:** استبدل الملفات في `assets/img/` بنفس الأسماء. وإن كان شعارك رمزًا فقط دون اسم، اجعل `"headerShowsName": true` داخل `brand` ليظهر الاسم نصًّا بجانبه.
+- كل الصفحات بتصميم فاتح؛ الشريط الإعلاني والتذييل ومشغّل الفيديو بلون حبري داكن للتباين.
 
 ### روابط الفيديو والبث المباشر (`courses.json`)
 ```json
@@ -157,12 +165,14 @@ training-platform/
 │   ├── js/ui.js          ← مكونات مشتركة (الباقات، الشهادة، الآراء)
 │   ├── js/pages/*.js     ← منطق كل صفحة
 │   └── img/              ← الشعار والأيقونة
+├── brand.html            ← دليل الهوية البصرية
 ├── data/                 ← كل المحتوى القابل للتعديل (JSON)
 ├── api/chat.js           ← دالة Vercel للمساعد الذكي (Claude)
 ├── vercel.json  package.json
 ```
 
 ### عن الواجهة ثلاثية الأبعاد
+- خلفية فاتحة بلون الهوية مع توهجات ناعمة بالأزرق والفيروزي والمرجاني، وظل خفيف تحت المكعب.
 - Three.js r169 عبر `importmap` (`three` و`three/addons/`: GLTFLoader و BufferGeometryUtils و RoundedBoxGeometry).
 - مجسم المكعب ذو الحواف الدائرية يُحمَّل من ملف GLB (`site.json ← hero.model`)، ويُستخدم `RoundedBoxGeometry(1, 1, 1, 8, 0.12)` إذا تعذّر تحميله.
 - الانكسار والتشتت اللوني (Chromatic Dispersion) عبر `ShaderMaterial` مخصص من مرحلتين: الوجوه الخلفية ثم الأمامية، مع 14 عينة طيفية. العنوان الضخم يُرسم كنسيج خلف المكعب فينكسر عبر الزجاج.
@@ -175,9 +185,9 @@ training-platform/
 
 ## English summary
 
-A complete bilingual (Arabic RTL / English LTR) training-platform front-end: 3D glass-cube hero with chromatic dispersion and the logo inside the glass, course catalogue, course player (YouTube/Vimeo/MP4 + live sessions with countdown, join link, calendar and recordings), quiz engine (single/multiple/true-false/text, exam & practice modes, timer, partial credit, negative marking, grading scale, instant review), learner dashboard, certificate (print/PDF, LinkedIn), pricing & checkout (hosted payment links, demo mode otherwise), contact & FAQ, notifications and an AI assistant powered by Claude (`api/chat.js`, needs `ANTHROPIC_API_KEY`; falls back to FAQ answers).
+**Agilix**: a complete bilingual (Arabic RTL / English LTR) training-platform front-end in a light brand theme (Agilix Blue #2E5BFF, Teal #14B8C4, Coral #FF6B3D, Ink #0E1630; Poppins + Tajawal; brand guide at `brand.html`): 3D glass-cube hero with chromatic dispersion and the logo inside the glass, course catalogue, course player (YouTube/Vimeo/MP4 + live sessions with countdown, join link, calendar and recordings), quiz engine (single/multiple/true-false/text, exam & practice modes, timer, partial credit, negative marking, grading scale, instant review), learner dashboard, certificate (print/PDF, LinkedIn), pricing & checkout (hosted payment links, demo mode otherwise), contact & FAQ, notifications and an AI assistant powered by Claude (`api/chat.js`, needs `ANTHROPIC_API_KEY`; falls back to FAQ answers).
 
 - **Deploy:** import the repo on Vercel with Root Directory `training-platform` and preset “Other”, or run `npx vercel --prod` inside the folder. No build step.
 - **Edit content:** everything lives in `data/*.json` (`{ "ar": …, "en": … }` for every text); UI labels are in `data/i18n/`.
-- **Brand:** replace `assets/img/logo-mark.svg` (also used inside the cube and on certificates), `favicon.svg` and `site.json → theme`.
+- **Brand:** logo files live in `assets/img/` (`logo.svg`, `logo-white.svg`, `logo-mark.svg`, `favicon.svg`); colours in `site.json → theme`.
 - **Before launch:** progress is stored in the visitor's browser; real accounts and payment-verified access need a backend (e.g. Supabase/Firebase + payment webhooks). Replace the sample testimonials, contact details and live links.

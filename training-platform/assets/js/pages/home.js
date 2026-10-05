@@ -6,6 +6,7 @@ import {
 import { plansMarkup, billingToggle, bindBillingToggle, yearlySaving, certificateMarkup, reviewsMarquee, faqAccordion } from '../ui.js';
 
 const PILLAR_ICONS = ['live', 'video', 'target', 'award', 'sparkles', 'chart'];
+const FEATURE_COLORS = ['var(--primary)', 'var(--secondary)', 'var(--highlight)'];
 let cycle = 'yearly';
 
 function sectionHead(eyebrow, title, text, extra = '', cls = '') {
@@ -35,7 +36,7 @@ async function render() {
     ${sectionHead(t('home.features.eyebrow'), esc(t('home.features.title')), t('home.features.text'))}
     <div class="grid grid--3">
       ${site.hero.pillars.map((p, i) => `
-        <a class="feature reveal" href="${esc(p.href)}" style="transition-delay:${i * 60}ms">
+        <a class="feature reveal" href="${esc(p.href)}" style="transition-delay:${i * 60}ms;--c:${FEATURE_COLORS[i % FEATURE_COLORS.length]}">
           <span class="feature__num">${String(i + 1).padStart(2, '0')}</span>
           <span class="feature__icon">${icon(PILLAR_ICONS[i] || 'spark')}</span>
           <h3>${esc(tx(p.title))}</h3>

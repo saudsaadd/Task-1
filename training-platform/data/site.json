@@ -2,22 +2,26 @@
   "_help": "Main settings file. Every text is { \"ar\": ..., \"en\": ... }. Edit values only; keep the keys. See README.md.",
 
   "brand": {
-    "name": { "ar": "أكاديمية مدار", "en": "Madar Academy" },
-    "shortName": { "ar": "مدار", "en": "MADAR" },
-    "logo": "assets/img/logo-mark.svg",
+    "name": { "ar": "أجيليكس", "en": "Agilix" },
+    "shortName": { "ar": "أجيليكس", "en": "AGILIX" },
+    "tagline": { "ar": "تعلّم بمرونة، وتقدّم أسرع", "en": "Learn agile. Grow faster." },
+    "logo": "assets/img/logo.svg",
+    "logoOnDark": "assets/img/logo-white.svg",
     "logoMark": "assets/img/logo-mark.svg",
     "favicon": "assets/img/favicon.svg",
+    "headerShowsName": false,
     "description": {
-      "ar": "منصة تدريب احترافية: بث مباشر، دروس مرئية، اختبارات تفاعلية، شهادات إتمام، ومساعد ذكي يرافقك طوال رحلتك.",
-      "en": "A professional training platform: live sessions, video lessons, interactive quizzes, completion certificates and an AI assistant that guides you all the way."
+      "ar": "أجيليكس منصة تدريب احترافية: بث مباشر، ودروس مرئية، واختبارات تفاعلية، وشهادات إتمام، ومساعد ذكي يرافقك في كل خطوة.",
+      "en": "Agilix is a professional training platform: live sessions, video lessons, interactive quizzes, completion certificates and an AI assistant at every step."
     }
   },
 
   "theme": {
-    "primary": "#8B7CFF",
-    "secondary": "#4FD1E8",
-    "highlight": "#FF6BB3",
-    "background": "#050507"
+    "primary": "#2E5BFF",
+    "secondary": "#14B8C4",
+    "highlight": "#FF6B3D",
+    "ink": "#0E1630",
+    "background": "#F6F7FB"
   },
 
   "defaultLanguage": "ar",
@@ -25,11 +29,11 @@
 
   "hero": {
     "model": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb",
-    "headline": { "ar": "عالم المهارات", "en": "Skill World" },
-    "eyebrow": { "ar": "منصة التدريب الاحترافي · 2026", "en": "Professional training platform · 2026" },
+    "headline": { "ar": "أجيليكس", "en": "Agilix" },
+    "eyebrow": { "ar": "تعلّم بمرونة، وتقدّم أسرع", "en": "Learn agile. Grow faster." },
     "tagline": {
-      "ar": "تعلّم بالممارسة: جلسات مباشرة، مسارات مرئية، اختبارات ذكية وشهادات معتمدة، في مكان واحد.",
-      "en": "Learn by doing: live sessions, video tracks, smart quizzes and certified results, all in one place."
+      "ar": "منصة تدريب احترافية تجمع الجلسات المباشرة، والمسارات المرئية، والاختبارات الذكية، والشهادات المعتمدة في مكان واحد.",
+      "en": "One professional training platform for live sessions, video tracks, smart quizzes and certified results."
     },
     "primaryCta": { "label": { "ar": "استكشف الدورات", "en": "Explore courses" }, "href": "courses.html" },
     "secondaryCta": { "label": { "ar": "شاهد المقدمة", "en": "Watch intro" }, "href": "course.html?id=ui-ux-fundamentals" },
@@ -83,7 +87,7 @@
   "assistant": {
     "enabled": true,
     "endpoint": "/api/chat",
-    "name": { "ar": "مساعد مدار", "en": "Madar Assistant" },
+    "name": { "ar": "مساعد أجيليكس", "en": "Agilix Assistant" },
     "welcome": {
       "ar": "مرحبًا! أنا المساعد الذكي للمنصة. اسألني عن الدورات، الاختبارات، الشهادات أو الاشتراكات.",
       "en": "Hi! I'm the platform's AI assistant. Ask me about courses, quizzes, certificates or plans."
@@ -112,8 +116,8 @@
   },
 
   "certificate": {
-    "issuer": { "ar": "أكاديمية مدار للتدريب", "en": "Madar Training Academy" },
-    "idPrefix": "MDR",
+    "issuer": { "ar": "منصة أجيليكس للتدريب", "en": "Agilix Training" },
+    "idPrefix": "AGX",
     "signatory": { "name": { "ar": "د. خالد العتيبي", "en": "Dr. Khalid Alotaibi" }, "title": { "ar": "مدير البرامج التدريبية", "en": "Director of Training Programs" } },
     "verifyUrl": "certificate.html"
   }

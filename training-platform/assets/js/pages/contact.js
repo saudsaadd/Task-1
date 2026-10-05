@@ -97,7 +97,7 @@ async function render() {
           <span class="chip chip--soft" style="width:fit-content">${icon('sparkles')}${esc(t('contact.trial.badge'))}</span>
           <h3 class="h3">${esc(t('contact.trial.title'))}</h3>
           <p class="muted">${esc(t('contact.trial.text'))}</p>
-          <div class="row"><a class="btn btn--light btn--sm" href="course.html?id=ui-ux-fundamentals">${esc(t('contact.trial.lesson'))}${icon('arrow', 'flip-rtl')}</a>
+          <div class="row"><a class="btn btn--ink btn--sm" href="course.html?id=ui-ux-fundamentals">${esc(t('contact.trial.lesson'))}${icon('arrow', 'flip-rtl')}</a>
             <button type="button" class="btn btn--ghost btn--sm" data-trial>${esc(t('contact.trial.demo'))}</button></div>
         </div>
       </div>

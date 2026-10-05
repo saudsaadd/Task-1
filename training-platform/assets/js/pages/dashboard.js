@@ -167,7 +167,7 @@ async function render() {
                   <span>${best ? esc(t('dash.bestScore', { n: fmtNum(best.percent) })) : esc(t('dash.since', { date: fmtDate(e.at, { day: 'numeric', month: 'short' }) }))}</span></div>
               </div>
               ${done ? `<a class="btn btn--accent btn--sm" href="certificate.html?course=${encodeURIComponent(c.id)}">${icon('award')}${esc(t('dash.viewCertificate'))}</a>`
-                : `<a class="btn btn--light btn--sm" href="course.html?id=${encodeURIComponent(c.id)}">${esc(p ? t('course.continue') : t('course.start'))}${icon('arrow', 'flip-rtl')}</a>`}
+                : `<a class="btn btn--ink btn--sm" href="course.html?id=${encodeURIComponent(c.id)}">${esc(p ? t('course.continue') : t('course.start'))}${icon('arrow', 'flip-rtl')}</a>`}
             </article>`;
           }).join('')}</div>` : `<div class="empty-state">${icon('book')}<h2>${esc(t('dash.noCourses'))}</h2><a class="btn btn--primary" href="courses.html">${esc(t('dash.browse'))}</a></div>`}
         </section>
@@ -198,7 +198,7 @@ async function render() {
             ${unread ? `<button type="button" class="link-btn" data-read-all>${esc(t('notif.markAll'))}</button>` : ''}</div>
           ${items.length ? `<div class="ann-list">${items.map((i) => `<article class="ann">
             <span class="notif__icon notif__icon--${esc(i.type)}">${icon(i.type || 'info')}</span>
-            <div class="stack" style="gap:4px"><b>${esc(tx(i.title))}${state.read.includes(i.id) ? '' : ' <span class="announce-bar__dot" style="display:inline-block;margin-inline-start:6px;vertical-align:middle;width:7px;height:7px"></span>'}</b>
+            <div class="stack" style="gap:4px"><b>${esc(tx(i.title))}${state.read.includes(i.id) ? '' : ' <span class="unread-dot" aria-hidden="true"></span>'}</b>
               <p>${esc(tx(i.body))}</p>
               <div class="row" style="gap:10px"><time class="muted" datetime="${esc(i.date)}">${esc(fmtDate(i.date))}</time>${i.link ? `<a class="link-btn" href="${esc(safeUrl(i.link))}">${esc(t('common.learnMore'))}</a>` : ''}</div></div>
           </article>`).join('')}</div>` : `<p class="muted">${esc(t('notif.empty'))}</p>`}

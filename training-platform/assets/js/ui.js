@@ -46,6 +46,7 @@ function rosette(cx, cy, r, n, color) {
 export function certificateMarkup({ learner, course, date, id, preview = false }) {
   const site = app.site;
   const cert = site.certificate || {};
+  const wordmark = site.brand.headerShowsName === false ? safeUrl(site.brand.logo) : '';
   const logo = safeUrl(site.brand.logoMark || site.brand.logo);
   const year = new Date(date).getFullYear();
   const courseTitle = `<b>${esc(tx(course.title))}</b>`;
@@ -57,7 +58,8 @@ export function certificateMarkup({ learner, course, date, id, preview = false }
     <div class="certificate__frame"></div>
     <div class="certificate__inner">
       <div class="certificate__top">
-        <div class="certificate__brand">${logo ? `<img src="${esc(logo)}" alt="">` : ''}<span>${esc(tx(site.brand.name))}</span></div>
+        <div class="certificate__brand">${wordmark ? `<img class="certificate__wordmark" src="${esc(wordmark)}" alt="${esc(tx(site.brand.name))}">`
+          : `${logo ? `<img src="${esc(logo)}" alt="">` : ''}<span>${esc(tx(site.brand.name))}</span>`}</div>
         <div class="certificate__id">${esc(t('cert.id'))}<br><b class="ltr">${esc(id)}</b></div>
       </div>
       <div class="certificate__body">
