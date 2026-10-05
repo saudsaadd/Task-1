@@ -1,0 +1,21 @@
+{
+  "_help": "Notifications shown in the bell menu and on the dashboard. type: info | success | warning | event. pinned: true shows it as a banner at the top of every page until dismissed.",
+  "items": [
+    { "id": "a-2026-10-04", "type": "event", "pinned": true, "date": "2026-10-04",
+      "title": { "ar": "ورشة مباشرة جديدة: أتمتة تقاريرك بالذكاء الاصطناعي", "en": "New live workshop: automate your reports with AI" },
+      "body": { "ar": "الخميس 9 أكتوبر الساعة 6 مساءً بتوقيت الرياض. المقاعد محدودة.", "en": "Thursday 9 October at 6 PM Riyadh time. Seats are limited." },
+      "link": "course.html?id=ai-essentials" },
+    { "id": "a-2026-10-01", "type": "success", "pinned": false, "date": "2026-10-01",
+      "title": { "ar": "إطلاق المساعد الذكي", "en": "AI assistant launched" },
+      "body": { "ar": "اسأل المساعد الذكي عن أي درس أو اختبار من الزر أسفل الشاشة.", "en": "Ask the AI assistant about any lesson or quiz from the button at the bottom of the screen." },
+      "link": "#chat" },
+    { "id": "a-2026-09-28", "type": "warning", "pinned": false, "date": "2026-09-28",
+      "title": { "ar": "صيانة مجدولة", "en": "Scheduled maintenance" },
+      "body": { "ar": "قد تتوقف المنصة لمدة 30 دقيقة يوم الجمعة 10 أكتوبر من 2 إلى 2:30 فجرًا.", "en": "The platform may be unavailable for 30 minutes on Friday 10 October, 2:00–2:30 AM." },
+      "link": "" },
+    { "id": "a-2026-09-20", "type": "info", "pinned": false, "date": "2026-09-20",
+      "title": { "ar": "خصم 25% للطلاب", "en": "25% off for students" },
+      "body": { "ar": "استخدم الرمز STUDENT25 عند الدفع.", "en": "Use code STUDENT25 at checkout." },
+      "link": "pricing.html" }
+  ]
+}

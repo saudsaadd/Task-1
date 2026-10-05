@@ -1,0 +1,18 @@
+{
+  "_help": "SAMPLE reviews for the layout only. Replace them with real reviews from your trainees (with their permission) before going live. rating: 1-5. avatar: optional image URL (initials are shown when empty).",
+  "summary": { "rating": 4.9, "count": 3200 },
+  "items": [
+    { "name": { "ar": "عبدالله الغامدي", "en": "Abdullah Alghamdi" }, "role": { "ar": "مصمم منتجات", "en": "Product Designer" }, "course": "ui-ux-fundamentals", "rating": 5, "avatar": "",
+      "text": { "ar": "الورش المباشرة غيّرت طريقتي في العمل. خرجت بنموذج أولي حقيقي أضفته إلى ملف أعمالي وحصلت بعده على عرض وظيفي.", "en": "The live workshops changed how I work. I left with a real prototype for my portfolio and landed a job offer soon after." } },
+    { "name": { "ar": "هند السبيعي", "en": "Hind Alsubaie" }, "role": { "ar": "محللة بيانات", "en": "Data Analyst" }, "course": "data-analysis", "rating": 5, "avatar": "",
+      "text": { "ar": "شرح واضح وأمثلة من بيانات حقيقية. الاختبارات بعد كل وحدة ساعدتني أعرف نقاط ضعفي بسرعة.", "en": "Clear explanations with real datasets. The quizzes after each unit showed me my weak spots fast." } },
+    { "name": { "ar": "محمد العنزي", "en": "Mohammed Alanazi" }, "role": { "ar": "مطور ويب", "en": "Web Developer" }, "course": "frontend-web", "rating": 5, "avatar": "",
+      "text": { "ar": "أفضل استثمار في مسيرتي هذا العام. المشروع النهائي منشور الآن على Vercel وأشاركه مع العملاء.", "en": "My best career investment this year. My capstone is live on Vercel and I share it with clients." } },
+    { "name": { "ar": "أمل الشهري", "en": "Amal Alshehri" }, "role": { "ar": "مديرة مشاريع", "en": "Project Manager" }, "course": "agile-pm", "rating": 4, "avatar": "",
+      "text": { "ar": "محاكاة السباق المباشرة كانت تجربة ممتعة جدًا وطبقناها في فريقنا من الأسبوع التالي.", "en": "The live sprint simulation was a lot of fun, and our team applied it the very next week." } },
+    { "name": { "ar": "يوسف القرني", "en": "Yousef Alqarni" }, "role": { "ar": "رائد أعمال", "en": "Entrepreneur" }, "course": "ai-essentials", "rating": 5, "avatar": "",
+      "text": { "ar": "وفّرت ساعات أسبوعيًا بعد ورشة الأتمتة. والمساعد الذكي في المنصة يجيب عن أسئلتي فورًا.", "en": "I save hours every week since the automation workshop, and the platform's AI assistant answers my questions instantly." } },
+    { "name": { "ar": "ريم الحارثي", "en": "Reem Alharthi" }, "role": { "ar": "أخصائية تسويق", "en": "Marketing Specialist" }, "course": "digital-marketing", "rating": 5, "avatar": "",
+      "text": { "ar": "قوالب الخطط والتقويم جاهزة للاستخدام مباشرة، والملاحظات المباشرة من المدربة كانت قيّمة جدًا.", "en": "The plan and calendar templates are ready to use, and the trainer's live feedback was invaluable." } }
+  ]
+}

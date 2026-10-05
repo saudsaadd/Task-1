@@ -1,0 +1,22 @@
+{
+  "_help": "Frequently asked questions. category must be one of the ids in categories.",
+  "categories": [
+    { "id": "general", "label": { "ar": "عام", "en": "General" } },
+    { "id": "learning", "label": { "ar": "التعلم", "en": "Learning" } },
+    { "id": "payments", "label": { "ar": "الدفع", "en": "Payments" } },
+    { "id": "certificates", "label": { "ar": "الشهادات", "en": "Certificates" } },
+    { "id": "technical", "label": { "ar": "الدعم الفني", "en": "Technical" } }
+  ],
+  "items": [
+    { "category": "general", "q": { "ar": "هل أحتاج إلى خبرة سابقة؟", "en": "Do I need previous experience?" }, "a": { "ar": "لا. كل دورة موضح مستواها (مبتدئ، متوسط، متقدم)، والدورات المبتدئة تبدأ من الصفر.", "en": "No. Every course shows its level (beginner, intermediate, advanced), and beginner courses start from zero." } },
+    { "category": "learning", "q": { "ar": "كيف أحضر الجلسات المباشرة؟", "en": "How do I join live sessions?" }, "a": { "ar": "يظهر رابط الانضمام داخل الدرس وفي لوحة التحكم قبل الموعد. وإذا فاتتك الجلسة يُضاف التسجيل لاحقًا.", "en": "The join link appears inside the lesson and on your dashboard before the session. If you miss it, the recording is added later." } },
+    { "category": "learning", "q": { "ar": "كم مرة يمكنني إعادة الاختبار؟", "en": "How many times can I retake a quiz?" }, "a": { "ar": "يمكنك إعادة الاختبار عدة مرات، وتُحتسب أعلى نتيجة لك. يمكنك مراجعة نتائجك السابقة في لوحة التحكم.", "en": "You can retake quizzes as many times as you like; your best score counts. Your past results are on your dashboard." } },
+    { "category": "learning", "q": { "ar": "هل يمكنني التعلم من الجوال؟", "en": "Can I learn on my phone?" }, "a": { "ar": "نعم، المنصة متجاوبة بالكامل وتعمل على الجوال والجهاز اللوحي والحاسوب.", "en": "Yes. The platform is fully responsive on phones, tablets and computers." } },
+    { "category": "payments", "q": { "ar": "ما طرق الدفع المتاحة؟", "en": "Which payment methods do you accept?" }, "a": { "ar": "بطاقات Visa و Mastercard و مدى، و Apple Pay، و STC Pay، و PayPal. تتم عملية الدفع عبر بوابة دفع آمنة.", "en": "Visa, Mastercard and mada cards, Apple Pay, STC Pay and PayPal. Payment happens on a secure payment gateway." } },
+    { "category": "payments", "q": { "ar": "هل يمكنني استرداد المبلغ؟", "en": "Can I get a refund?" }, "a": { "ar": "نعم، يوجد ضمان استرداد كامل خلال 14 يومًا من الاشتراك.", "en": "Yes, there's a full money-back guarantee within 14 days of subscribing." } },
+    { "category": "payments", "q": { "ar": "هل الأسعار تشمل الضريبة؟", "en": "Do prices include VAT?" }, "a": { "ar": "تُضاف ضريبة القيمة المضافة (15%) في صفحة الدفع وتظهر بوضوح في ملخص الطلب.", "en": "VAT (15%) is added at checkout and shown clearly in the order summary." } },
+    { "category": "certificates", "q": { "ar": "متى أحصل على الشهادة؟", "en": "When do I get my certificate?" }, "a": { "ar": "بعد إكمال جميع دروس الدورة واجتياز الاختبار النهائي بالدرجة المطلوبة، تصدر شهادتك فورًا ويمكنك طباعتها أو حفظها PDF.", "en": "Once you finish every lesson and pass the final quiz, your certificate is issued instantly and you can print it or save it as PDF." } },
+    { "category": "certificates", "q": { "ar": "هل يمكن التحقق من الشهادة؟", "en": "Can the certificate be verified?" }, "a": { "ar": "نعم، لكل شهادة رقم فريد يمكن مشاركته، ويمكنك إضافتها إلى ملفك في LinkedIn مباشرة.", "en": "Yes. Each certificate has a unique ID you can share, and you can add it to your LinkedIn profile in one click." } },
+    { "category": "technical", "q": { "ar": "الفيديو لا يعمل، ماذا أفعل؟", "en": "A video won't play. What should I do?" }, "a": { "ar": "حدّث الصفحة وتأكد من اتصالك بالإنترنت، وجرّب متصفحًا آخر. إذا استمرت المشكلة راسلنا من صفحة التواصل مع اسم الدورة والدرس.", "en": "Refresh the page, check your connection and try another browser. If it persists, contact us with the course and lesson name." } }
+  ]
+}

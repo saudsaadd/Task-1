@@ -1,0 +1,120 @@
+{
+  "_help": "Main settings file. Every text is { \"ar\": ..., \"en\": ... }. Edit values only; keep the keys. See README.md.",
+
+  "brand": {
+    "name": { "ar": "أكاديمية مدار", "en": "Madar Academy" },
+    "shortName": { "ar": "مدار", "en": "MADAR" },
+    "logo": "assets/img/logo-mark.svg",
+    "logoMark": "assets/img/logo-mark.svg",
+    "favicon": "assets/img/favicon.svg",
+    "description": {
+      "ar": "منصة تدريب احترافية: بث مباشر، دروس مرئية، اختبارات تفاعلية، شهادات إتمام، ومساعد ذكي يرافقك طوال رحلتك.",
+      "en": "A professional training platform: live sessions, video lessons, interactive quizzes, completion certificates and an AI assistant that guides you all the way."
+    }
+  },
+
+  "theme": {
+    "primary": "#8B7CFF",
+    "secondary": "#4FD1E8",
+    "highlight": "#FF6BB3",
+    "background": "#050507"
+  },
+
+  "defaultLanguage": "ar",
+  "locales": { "ar": "ar-SA-u-nu-latn", "en": "en-US" },
+
+  "hero": {
+    "model": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb",
+    "headline": { "ar": "عالم المهارات", "en": "Skill World" },
+    "eyebrow": { "ar": "منصة التدريب الاحترافي · 2026", "en": "Professional training platform · 2026" },
+    "tagline": {
+      "ar": "تعلّم بالممارسة: جلسات مباشرة، مسارات مرئية، اختبارات ذكية وشهادات معتمدة، في مكان واحد.",
+      "en": "Learn by doing: live sessions, video tracks, smart quizzes and certified results, all in one place."
+    },
+    "primaryCta": { "label": { "ar": "استكشف الدورات", "en": "Explore courses" }, "href": "courses.html" },
+    "secondaryCta": { "label": { "ar": "شاهد المقدمة", "en": "Watch intro" }, "href": "course.html?id=ui-ux-fundamentals" },
+    "dragHint": { "ar": "اسحب لتدوير المكعب", "en": "Drag to rotate" },
+    "pillars": [
+      { "title": { "ar": "بث مباشر", "en": "Live sessions" }, "text": { "ar": "جلسات تفاعلية مع المدربين", "en": "Interactive classes with trainers" }, "href": "dashboard.html#live" },
+      { "title": { "ar": "دروس مرئية", "en": "Video lessons" }, "text": { "ar": "مكتبة دروس تشاهدها في أي وقت", "en": "On-demand lesson library" }, "href": "courses.html" },
+      { "title": { "ar": "اختبارات ذكية", "en": "Smart quizzes" }, "text": { "ar": "تقييم فوري ونتائج مفصلة", "en": "Instant grading, detailed results" }, "href": "quiz.html?id=quiz-ui-ux" },
+      { "title": { "ar": "شهادات إتمام", "en": "Certificates" }, "text": { "ar": "شهادة موثّقة لكل دورة تكملها", "en": "A verifiable certificate per course" }, "href": "certificate.html?course=ui-ux-fundamentals" },
+      { "title": { "ar": "مساعد ذكي", "en": "AI assistant" }, "text": { "ar": "إجابات فورية عن المنهج", "en": "Instant answers about the curriculum" }, "href": "#chat" },
+      { "title": { "ar": "لوحة الإنجاز", "en": "Progress dashboard" }, "text": { "ar": "تابع تقدمك ونتائجك", "en": "Track your progress and results" }, "href": "dashboard.html" }
+    ]
+  },
+
+  "stats": [
+    { "value": "12K+", "label": { "ar": "متدرب", "en": "Trainees" } },
+    { "value": "48", "label": { "ar": "دورة احترافية", "en": "Pro courses" } },
+    { "value": "4.9", "label": { "ar": "متوسط التقييم", "en": "Avg. rating" } },
+    { "value": "96%", "label": { "ar": "نسبة الرضا", "en": "Satisfaction" } }
+  ],
+
+  "navigation": [
+    { "label": { "ar": "الرئيسية", "en": "Home" }, "href": "index.html" },
+    { "label": { "ar": "الدورات", "en": "Courses" }, "href": "courses.html" },
+    { "label": { "ar": "الأسعار", "en": "Pricing" }, "href": "pricing.html" },
+    { "label": { "ar": "لوحتي", "en": "Dashboard" }, "href": "dashboard.html" },
+    { "label": { "ar": "تواصل معنا", "en": "Contact" }, "href": "contact.html" }
+  ],
+
+  "contact": {
+    "email": "support@example.com",
+    "phone": "+966 50 000 0000",
+    "whatsapp": "966500000000",
+    "address": { "ar": "الرياض، المملكة العربية السعودية", "en": "Riyadh, Saudi Arabia" },
+    "hours": { "ar": "الأحد – الخميس، 9 ص – 6 م", "en": "Sun – Thu, 9 AM – 6 PM" },
+    "responseTime": { "ar": "نرد خلال 24 ساعة عمل", "en": "We reply within 24 business hours" }
+  },
+
+  "social": [
+    { "name": "X", "url": "https://x.com/" },
+    { "name": "LinkedIn", "url": "https://www.linkedin.com/" },
+    { "name": "YouTube", "url": "https://www.youtube.com/" },
+    { "name": "Instagram", "url": "https://www.instagram.com/" }
+  ],
+
+  "contactForm": {
+    "_help": "Paste a form endpoint (Formspree, Getform, Basin...) to receive messages by email. Leave empty to open the visitor's email app instead.",
+    "endpoint": ""
+  },
+
+  "assistant": {
+    "enabled": true,
+    "endpoint": "/api/chat",
+    "name": { "ar": "مساعد مدار", "en": "Madar Assistant" },
+    "welcome": {
+      "ar": "مرحبًا! أنا المساعد الذكي للمنصة. اسألني عن الدورات، الاختبارات، الشهادات أو الاشتراكات.",
+      "en": "Hi! I'm the platform's AI assistant. Ask me about courses, quizzes, certificates or plans."
+    },
+    "suggestions": [
+      { "ar": "ما الدورة المناسبة للمبتدئين؟", "en": "Which course suits beginners?" },
+      { "ar": "كيف أحصل على الشهادة؟", "en": "How do I get my certificate?" },
+      { "ar": "ما الفرق بين الباقات؟", "en": "What's the difference between plans?" }
+    ]
+  },
+
+  "payments": {
+    "_help": "Prices are in the currency below. Put your hosted checkout links (Stripe Payment Links, Moyasar, Tap, PayPal...) in plans.json / courses.json → paymentLink. While a link is empty the checkout runs in demo mode (no real charge).",
+    "currency": "SAR",
+    "vatRate": 0.15,
+    "methods": [
+      { "id": "card", "label": { "ar": "بطاقة ائتمانية / مدى", "en": "Card / mada" }, "hint": "Visa · Mastercard · mada" },
+      { "id": "applepay", "label": { "ar": "Apple Pay", "en": "Apple Pay" }, "hint": "Touch ID / Face ID" },
+      { "id": "stcpay", "label": { "ar": "STC Pay", "en": "STC Pay" }, "hint": "Wallet" },
+      { "id": "paypal", "label": { "ar": "PayPal", "en": "PayPal" }, "hint": "PayPal account" }
+    ],
+    "coupons": [
+      { "code": "WELCOME10", "percent": 10 },
+      { "code": "STUDENT25", "percent": 25 }
+    ]
+  },
+
+  "certificate": {
+    "issuer": { "ar": "أكاديمية مدار للتدريب", "en": "Madar Training Academy" },
+    "idPrefix": "MDR",
+    "signatory": { "name": { "ar": "د. خالد العتيبي", "en": "Dr. Khalid Alotaibi" }, "title": { "ar": "مدير البرامج التدريبية", "en": "Director of Training Programs" } },
+    "verifyUrl": "certificate.html"
+  }
+}

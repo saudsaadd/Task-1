@@ -1,0 +1,63 @@
+{
+  "_help": "Subscription plans. Prices are per month / per year in the currency from site.json. Put your hosted checkout links in paymentLinks (monthly / yearly). Empty link = demo checkout.",
+  "plans": [
+    {
+      "id": "starter",
+      "name": { "ar": "المبتدئ", "en": "Starter" },
+      "description": { "ar": "ابدأ مجانًا واكتشف المنصة.", "en": "Start free and explore the platform." },
+      "price": { "monthly": 0, "yearly": 0 },
+      "paymentLinks": { "monthly": "", "yearly": "" },
+      "highlight": false,
+      "cta": { "ar": "ابدأ مجانًا", "en": "Start for free" },
+      "features": [
+        { "ar": "الدورات المجانية كاملة", "en": "All free courses" },
+        { "ar": "الدروس التجريبية لكل الدورات", "en": "Preview lessons of every course" },
+        { "ar": "اختبارات تدريبية", "en": "Practice quizzes" },
+        { "ar": "المساعد الذكي (محدود)", "en": "AI assistant (limited)" }
+      ]
+    },
+    {
+      "id": "pro",
+      "name": { "ar": "الاحترافي", "en": "Pro" },
+      "description": { "ar": "كل ما تحتاجه للتعلم بلا حدود.", "en": "Everything you need to learn without limits." },
+      "price": { "monthly": 149, "yearly": 1430 },
+      "paymentLinks": { "monthly": "", "yearly": "" },
+      "highlight": true,
+      "badge": { "ar": "الأكثر طلبًا", "en": "Most popular" },
+      "cta": { "ar": "اشترك الآن", "en": "Subscribe now" },
+      "features": [
+        { "ar": "جميع الدورات والمسارات", "en": "Every course and track" },
+        { "ar": "حضور جميع الجلسات المباشرة", "en": "All live sessions" },
+        { "ar": "اختبارات نهائية وشهادات إتمام", "en": "Final exams and certificates" },
+        { "ar": "المساعد الذكي بلا حدود", "en": "Unlimited AI assistant" },
+        { "ar": "تحميل الموارد والملفات", "en": "Downloadable resources" }
+      ]
+    },
+    {
+      "id": "teams",
+      "name": { "ar": "الفرق والشركات", "en": "Teams" },
+      "description": { "ar": "درّب فريقك وتابع تقدمه.", "en": "Train your team and track its progress." },
+      "price": { "monthly": 399, "yearly": 3830 },
+      "paymentLinks": { "monthly": "", "yearly": "" },
+      "highlight": false,
+      "cta": { "ar": "اشترك للفريق", "en": "Get Teams" },
+      "features": [
+        { "ar": "كل مزايا الاحترافي", "en": "Everything in Pro" },
+        { "ar": "حتى 10 مقاعد", "en": "Up to 10 seats" },
+        { "ar": "تقارير تقدم الفريق", "en": "Team progress reports" },
+        { "ar": "جلسات مباشرة خاصة", "en": "Private live sessions" },
+        { "ar": "مدير حساب مخصص", "en": "Dedicated account manager" }
+      ]
+    }
+  ],
+  "comparison": [
+    { "label": { "ar": "الدورات المجانية", "en": "Free courses" }, "values": [true, true, true] },
+    { "label": { "ar": "الدورات المدفوعة", "en": "Paid courses" }, "values": [false, true, true] },
+    { "label": { "ar": "الجلسات المباشرة", "en": "Live sessions" }, "values": [false, true, true] },
+    { "label": { "ar": "الاختبارات النهائية", "en": "Final exams" }, "values": [false, true, true] },
+    { "label": { "ar": "شهادات الإتمام", "en": "Certificates" }, "values": [true, true, true] },
+    { "label": { "ar": "المساعد الذكي", "en": "AI assistant" }, "values": ["10/day", true, true] },
+    { "label": { "ar": "تقارير الفريق", "en": "Team reports" }, "values": [false, false, true] }
+  ],
+  "guarantee": { "ar": "ضمان استرداد كامل خلال 14 يومًا دون أسئلة.", "en": "Full refund within 14 days, no questions asked." }
+}

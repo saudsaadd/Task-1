@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أكاديمية مدار · Madar Academy</title>
+<meta name="description" content="منصة تدريب احترافية: بث مباشر، دروس مرئية، اختبارات تفاعلية، شهادات إتمام، ومساعد ذكي.">
+<meta name="theme-color" content="#050507">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Madar Academy · أكاديمية مدار">
+<meta property="og:description" content="Live sessions, video lessons, smart quizzes, certificates and an AI assistant.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&family=Great+Vibes&family=Aref+Ruqaa:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/css/app.css">
+<script>(function(){try{var p=new URLSearchParams(location.search).get('lang'),l=p||localStorage.getItem('academy.lang');if(l==='en'||l==='ar'){var d=document.documentElement;d.lang=l;d.dir=l==='ar'?'rtl':'ltr';}}catch(e){}})();</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="assets/js/pages/home.js"></script>
+
+<!-- =====================================================================
+     HERO — inline CSS. The 3D glass cuboid, the refracted headline and the
+     side counter are self-contained in this file (CSS + JS below).
+     ===================================================================== -->
+<style>
+  .hero {
+    --hero-pad: clamp(16px, 4vw, 48px);
+    position: relative; isolation: isolate; overflow: hidden;
+    height: 100vh; height: 100svh; min-height: 640px;
+    background: #050507; color: #fff;
+    font-family: 'Poppins', 'Tajawal', sans-serif;
+  }
+  html[lang="ar"] .hero { font-family: 'Tajawal', 'Poppins', sans-serif; }
+  .hero__canvas {
+    position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%;
+    cursor: grab; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+    opacity: 0; transition: opacity 1.4s cubic-bezier(.2,.7,.2,1);
+  }
+  .hero.is-ready .hero__canvas { opacity: 1; }
+  .hero.is-dragging .hero__canvas { cursor: grabbing; }
+  .hero__vignette {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(130% 95% at 50% 46%, transparent 52%, rgba(0,0,0,.72)),
+      linear-gradient(180deg, rgba(5,5,7,.6), transparent 20%, transparent 64%, rgba(5,5,7,.92));
+  }
+
+  /* Fallback when WebGL is unavailable */
+  .hero__fallback { position: absolute; inset: 0; z-index: 0; display: none; place-items: center; }
+  .hero--fallback .hero__fallback { display: grid; }
+  .hero__fallback-text {
+    font-weight: 800; font-size: clamp(56px, 13vw, 220px); letter-spacing: -.05em; line-height: .9; text-align: center;
+    text-transform: uppercase; color: #fff; padding-inline: 4vw;
+  }
+  html[lang="ar"] .hero__fallback-text { text-transform: none; letter-spacing: 0; line-height: 1.1; }
+  .hero__fallback-cube {
+    position: absolute; width: min(36vh, 46vw); aspect-ratio: 1; border-radius: 18%;
+    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
+    border: 1px solid rgba(255,255,255,.35);
+    backdrop-filter: blur(6px) saturate(160%); -webkit-backdrop-filter: blur(6px) saturate(160%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 40px 120px -20px rgba(139,124,255,.55);
+    display: grid; place-items: center; transform: rotate(-8deg);
+  }
+  .hero__fallback-cube img { width: 54%; height: 54%; transform: rotate(8deg); }
+
+  /* UI layer */
+  .hero__ui {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    display: grid; grid-template-rows: auto 1fr auto;
+    padding: calc(76px + clamp(18px, 3vh, 36px)) var(--hero-pad) clamp(22px, 4.5vh, 48px);
+  }
+  .hero__ui a, .hero__ui button { pointer-events: auto; }
+  .hero__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.72);
+  }
+  html[lang="ar"] .hero__eyebrow { letter-spacing: 0; font-size: 14px; }
+  .hero__eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(255,255,255,.12), 0 0 18px #fff; }
+
+  .hero__bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  .hero__copy { max-width: 470px; display: grid; gap: 22px; }
+  .hero__tagline { margin: 0; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.6; color: rgba(255,255,255,.78); font-weight: 400; }
+  html[lang="ar"] .hero__tagline { font-size: clamp(16px, 1.35vw, 19px); }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero__btn {
+    display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 10px 0 26px;
+    border-radius: 999px; font-size: 15px; font-weight: 600; white-space: nowrap; text-decoration: none;
+    transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s, background .3s, border-color .3s;
+  }
+  html[dir="rtl"] .hero__btn { padding: 0 26px 0 10px; }
+  .hero__btn:hover { transform: translateY(-2px); }
+  .hero__btn--solid { background: #fff; color: #050507; box-shadow: 0 18px 50px -18px rgba(139,124,255,.9); }
+  .hero__btn--solid:hover { box-shadow: 0 22px 60px -16px rgba(139,124,255,1); }
+  .hero__btn--solid .hero__btn-icon { background: #050507; color: #fff; }
+  .hero__btn--glass {
+    color: #fff; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 0 26px 0 10px;
+  }
+  html[dir="rtl"] .hero__btn--glass { padding: 0 10px 0 26px; }
+  .hero__btn--glass:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.32); }
+  .hero__btn--glass .hero__btn-icon { background: rgba(255,255,255,.14); }
+  .hero__btn-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; flex: none; }
+  .hero__btn-icon svg { width: 16px; height: 16px; }
+  html[dir="rtl"] .hero__btn--solid .hero__btn-icon svg { transform: scaleX(-1); }
+
+  .hero__hint {
+    display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,.62);
+    transition: opacity .6s, transform .6s;
+  }
+  .hero__hint-icon {
+    position: relative; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.22);
+  }
+  .hero__hint-icon svg { width: 20px; height: 20px; animation: hero-swipe 2.6s ease-in-out infinite; }
+  .hero__hint-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.18); animation: hero-spin 14s linear infinite; }
+  .hero.has-interacted .hero__hint { opacity: .0; transform: translateY(6px); }
+  @keyframes hero-swipe { 0%, 100% { transform: translateX(-4px) rotate(-6deg); } 50% { transform: translateX(4px) rotate(6deg); } }
+  @keyframes hero-spin { to { transform: rotate(360deg); } }
+
+  /* Side counter */
+  .hero__counter {
+    position: absolute; z-index: 3; top: 50%; inset-inline-end: var(--hero-pad); transform: translateY(-50%);
+    display: grid; justify-items: end; gap: 18px; width: 180px; text-align: end; pointer-events: auto;
+  }
+  .hero__num { display: grid; justify-items: end; gap: 10px; font-variant-numeric: tabular-nums; }
+  .hero__num-current { position: relative; height: 1em; overflow: hidden; font-size: 54px; font-weight: 600; line-height: 1; letter-spacing: -.04em; font-family: 'Poppins', sans-serif; }
+  .hero__num-current span { display: block; transition: transform .6s cubic-bezier(.2,.7,.2,1), opacity .6s; }
+  .hero__num-rule { width: 44px; height: 1px; background: rgba(255,255,255,.4); }
+  .hero__num-total { font-size: 14px; color: rgba(255,255,255,.5); font-family: 'Poppins', sans-serif; letter-spacing: .1em; }
+  .hero__track { display: grid; gap: 6px; }
+  .hero__track i { display: block; width: 3px; height: 14px; border-radius: 3px; background: rgba(255,255,255,.18); justify-self: end; transition: height .5s cubic-bezier(.2,.7,.2,1), background .5s; }
+  .hero__track i.is-active { height: 34px; background: linear-gradient(180deg, #FF6BB3, #8B7CFF, #4FD1E8); }
+  .hero__pillar { display: grid; gap: 4px; text-decoration: none; color: #fff; transition: opacity .45s, transform .45s; }
+  .hero__pillar b { font-size: 16px; font-weight: 600; }
+  .hero__pillar span { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.6); }
+  .hero__pillar:hover b { text-decoration: underline; text-underline-offset: 4px; }
+  .hero__pillar.is-changing { opacity: 0; transform: translateY(8px); }
+  .hero__arrows { display: flex; gap: 8px; }
+  .hero__arrow {
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+    color: #fff; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.18);
+    transition: background .25s, border-color .25s, transform .25s;
+  }
+  .hero__arrow:hover { background: #fff; color: #050507; border-color: #fff; }
+  .hero__arrow:active { transform: scale(.94); }
+  .hero__arrow svg { width: 18px; height: 18px; }
+
+  .hero__scroll {
+    position: absolute; z-index: 3; bottom: clamp(22px, 4.5vh, 48px); left: 50%; transform: translateX(-50%);
+    display: grid; justify-items: center; gap: 10px; color: rgba(255,255,255,.55); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; text-decoration: none;
+  }
+  html[lang="ar"] .hero__scroll { letter-spacing: 0; font-size: 13px; }
+  .hero__scroll i { position: relative; width: 1px; height: 42px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .hero__scroll i::after { content: ""; position: absolute; inset-inline: 0; top: -40%; height: 40%; background: #fff; animation: hero-drop 2.2s cubic-bezier(.6,0,.2,1) infinite; }
+  @keyframes hero-drop { to { top: 110%; } }
+
+  @media (max-width: 1024px) {
+    .hero__counter { width: 150px; }
+    .hero__num-current { font-size: 44px; }
+  }
+  @media (max-width: 760px) {
+    .hero { min-height: 600px; }
+    .hero__ui { grid-template-rows: auto 1fr auto auto; padding-top: calc(76px + 12px); }
+    .hero__bottom { grid-row: 4; flex-direction: column; align-items: stretch; gap: 18px; }
+    .hero__copy { max-width: none; gap: 16px; }
+    .hero__actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+    .hero__btn { justify-content: space-between; gap: 8px; height: 50px; font-size: 14px; padding-inline: 18px 8px; min-width: 0; }
+    html[dir="rtl"] .hero__btn { padding-inline: 18px 8px; }
+    .hero__btn--glass, html[dir="rtl"] .hero__btn--glass { padding-inline: 8px 18px; }
+    .hero__btn > span:not(.hero__btn-icon) { overflow: hidden; text-overflow: ellipsis; }
+    .hero__hint, .hero__scroll { display: none; }
+    .hero__counter {
+      position: static; transform: none; grid-row: 3; width: auto; margin-bottom: 18px;
+      grid-template-columns: auto 1fr auto; align-items: center; justify-items: start; text-align: start; gap: 14px;
+      padding: 12px 12px 12px 16px; border-radius: 20px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    html[dir="rtl"] .hero__counter { padding: 12px 16px 12px 12px; }
+    .hero__num { grid-auto-flow: column; align-items: baseline; gap: 6px; }
+    .hero__num-current { font-size: 28px; }
+    .hero__num-rule { display: none; }
+    .hero__num-total::before { content: "/ "; }
+    .hero__track { display: none; }
+    .hero__pillar b { font-size: 14px; }
+    .hero__pillar span { font-size: 12px; }
+    .hero__arrow { width: 38px; height: 38px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__hint-icon svg, .hero__hint-icon::after, .hero__scroll i::after { animation: none; }
+  }
+
+  /* Stats band under the hero */
+  .stats-band { border-block: 1px solid var(--border); background: rgba(255,255,255,.012); }
+  .stats-band__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stat { padding: clamp(22px, 3vw, 36px) 12px; text-align: center; display: grid; gap: 2px; }
+  .stat + .stat { border-inline-start: 1px solid var(--border); }
+  .stat b { font-size: clamp(28px, 3.4vw, 44px); font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
+  .stat span { color: var(--muted); font-size: 14px; }
+  @media (max-width: 640px) { .stats-band__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat:nth-child(3) { border-inline-start: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--border); } }
+
+  .feature { position: relative; display: grid; gap: 14px; align-content: start; padding: 28px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); transition: background .3s, border-color .3s, transform .4s var(--ease); }
+  .feature:hover { background: var(--surface-2); border-color: var(--border-strong); transform: translateY(-3px); }
+  .feature__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid var(--border); }
+  .feature__icon .icon { width: 24px; height: 24px; }
+  .feature h3 { font-size: 19px; font-weight: 600; }
+  .feature p { color: var(--muted); font-size: 15px; }
+  .feature__num { position: absolute; top: 24px; inset-inline-end: 26px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .experience { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; align-items: stretch; }
+  @media (max-width: 960px) { .experience { grid-template-columns: minmax(0, 1fr); } }
+  .cta-band { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-xl); padding: clamp(36px, 6vw, 80px); text-align: center; display: grid; justify-items: center; gap: 20px; border: 1px solid var(--border-strong); background: radial-gradient(80% 120% at 50% 0%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 70%), var(--bg-elev); }
+  .cta-band .glow-orb { width: 360px; height: 360px; bottom: -220px; left: 50%; margin-left: -180px; background: var(--secondary); opacity: .25; }
+</style>
+</head>
+<body data-page="home">
+<a class="skip-link" href="#main" data-i18n="nav.skip">تخطَّ إلى المحتوى</a>
+<header id="site-header" class="site-header"></header>
+
+<main id="main">
+  <!-- ============================== HERO ============================== -->
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero__fallback" aria-hidden="true">
+      <span class="hero__fallback-text" data-hero="headline"></span>
+      <span class="hero__fallback-cube"><img data-hero="logo" alt=""></span>
+    </div>
+    <div class="hero__vignette" aria-hidden="true"></div>
+    <h1 class="sr-only" id="hero-title" data-hero="title"></h1>
+
+    <div class="hero__ui">
+      <div class="hero__top">
+        <span class="hero__eyebrow"><i aria-hidden="true"></i><span data-hero="eyebrow"></span></span>
+        <div class="hero__hint" aria-hidden="true">
+          <span class="hero__hint-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11V4.5a1.5 1.5 0 0 1 3 0V12M14 11.5V6a1.5 1.5 0 0 1 3 0v7.5c0 4-2.5 7-6.5 7-3 0-4.5-1.6-6-4.4L3 13.4a1.4 1.4 0 0 1 2.4-1.5L8 15"/></svg></span>
+          <span data-hero="hint"></span>
+        </div>
+      </div>
+      <div></div>
+      <div class="hero__bottom">
+        <div class="hero__copy">
+          <p class="hero__tagline" data-hero="tagline"></p>
+          <div class="hero__actions">
+            <a class="hero__btn hero__btn--solid" data-hero="cta1" href="courses.html"><span></span><span class="hero__btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="hero__btn hero__btn--glass" data-hero="cta2" href="courses.html"><span class="hero__btn-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg></span><span></span></a>
+          </div>
+        </div>
+      </div>
+      <aside class="hero__counter" data-hero="counter">
+        <div class="hero__num" aria-hidden="true">
+          <span class="hero__num-current"><span>01</span></span>
+          <span class="hero__num-rule"></span>
+          <span class="hero__num-total">06</span>
+        </div>
+        <div class="hero__track" aria-hidden="true"></div>
+        <a class="hero__pillar" href="#"><b></b><span></span></a>
+        <div class="hero__arrows">
+          <button type="button" class="hero__arrow" data-step="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
+          <button type="button" class="hero__arrow" data-step="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        </div>
+      </aside>
+    </div>
+
+    <a class="hero__scroll" href="#features"><span data-hero="scroll">Scroll</span><i aria-hidden="true"></i></a>
+  </section>
+
+  <!-- ============================ SECTIONS ============================ -->
+  <section class="stats-band" id="stats" aria-label="Stats"><div class="container stats-band__grid"></div></section>
+  <section class="page-section" id="features"></section>
+  <section class="page-section" id="courses" style="padding-top:0"></section>
+  <section class="page-section" id="experience" style="padding-top:0"></section>
+  <section class="page-section" id="reviews" style="padding-top:0"></section>
+  <section class="page-section" id="pricing" style="padding-top:0"></section>
+  <section class="page-section" id="faq" style="padding-top:0"></section>
+  <section class="page-section" id="cta" style="padding-top:0"></section>
+</main>
+
+<footer id="site-footer" class="site-footer"></footer>
+
+<!-- =====================================================================
+     HERO — inline JS (Three.js r169 via the importmap above).
+     A rounded glass cuboid refracts a huge background headline with
+     chromatic dispersion; the platform logo floats inside the glass.
+     Drag to rotate (with inertia); the side counter follows the face that
+     points at the viewer.
+     ===================================================================== -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const MODEL_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb';
+
+// Built-in defaults so the hero works on its own; data/site.json overrides them.
+const DEFAULT_LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512"><defs><linearGradient id="r" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF6BB3"/><stop offset=".5" stop-color="#8B7CFF"/><stop offset="1" stop-color="#4FD1E8"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#r)" stroke-width="4.5"/><path d="M19.5 42.5V22.5L32 35l12.5-12.5v20" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50.4" cy="13.6" r="6.4" fill="#050507"/><circle cx="50.4" cy="13.6" r="4.2" fill="#fff"/></svg>');
+
+let config = {
+  brand: { name: { ar: 'أكاديمية مدار', en: 'Madar Academy' }, logoMark: DEFAULT_LOGO },
+  theme: { primary: '#8B7CFF', secondary: '#4FD1E8', highlight: '#FF6BB3' },
+  hero: {
+    model: MODEL_URL,
+    headline: { ar: 'عالم المهارات', en: 'Skill World' },
+    eyebrow: { ar: 'منصة التدريب الاحترافي', en: 'Professional training platform' },
+    tagline: { ar: 'تعلّم بالممارسة: جلسات مباشرة، مسارات مرئية، اختبارات ذكية وشهادات معتمدة.', en: 'Learn by doing: live sessions, video tracks, smart quizzes and certified results.' },
+    primaryCta: { label: { ar: 'استكشف الدورات', en: 'Explore courses' }, href: 'courses.html' },
+    secondaryCta: { label: { ar: 'شاهد المقدمة', en: 'Watch intro' }, href: 'courses.html' },
+    dragHint: { ar: 'اسحب لتدوير المكعب', en: 'Drag to rotate' },
+    pillars: [
+      { title: { ar: 'بث مباشر', en: 'Live sessions' }, text: { ar: 'جلسات تفاعلية', en: 'Interactive classes' }, href: 'dashboard.html' },
+      { title: { ar: 'دروس مرئية', en: 'Video lessons' }, text: { ar: 'مكتبة دروس', en: 'On-demand library' }, href: 'courses.html' },
+      { title: { ar: 'اختبارات ذكية', en: 'Smart quizzes' }, text: { ar: 'تقييم فوري', en: 'Instant grading' }, href: 'courses.html' },
+      { title: { ar: 'شهادات', en: 'Certificates' }, text: { ar: 'لكل دورة', en: 'For every course' }, href: 'certificate.html' },
+      { title: { ar: 'مساعد ذكي', en: 'AI assistant' }, text: { ar: 'إجابات فورية', en: 'Instant answers' }, href: '#chat' },
+      { title: { ar: 'لوحة الإنجاز', en: 'Dashboard' }, text: { ar: 'تابع تقدمك', en: 'Track progress' }, href: 'dashboard.html' }
+    ]
+  }
+};
+
+const hero = document.getElementById('hero');
+const canvas = document.getElementById('hero-canvas');
+const counterEl = hero.querySelector('[data-hero="counter"]');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(pointer: coarse)').matches;
+const lang = () => (document.documentElement.lang === 'en' ? 'en' : 'ar');
+const pick = (v) => (v && typeof v === 'object' ? (v[lang()] ?? v.en ?? v.ar ?? '') : (v ?? ''));
+const fit = (s) => { const u = String(s || '').trim(); return u && !/^(javascript|data|vbscript):/i.test(u) ? u : '#'; };
+const pad = (n) => String(n).padStart(2, '0');
+
+let activeFace = 0;
+let refreshText = () => {};
+
+/* ------------------------------------------------------------ DOM copy */
+function renderCopy() {
+  const h = config.hero;
+  const q = (k) => hero.querySelector(`[data-hero="${k}"]`);
+  q('title').textContent = `${pick(h.headline)} · ${pick(config.brand.name)}`;
+  q('headline').textContent = pick(h.headline);
+  q('eyebrow').textContent = pick(h.eyebrow);
+  q('tagline').textContent = pick(h.tagline);
+  q('hint').textContent = pick(h.dragHint);
+  q('scroll').textContent = lang() === 'ar' ? 'مرّر' : 'Scroll';
+  q('logo').src = config.brand.logoMark || DEFAULT_LOGO;
+  const c1 = q('cta1'), c2 = q('cta2');
+  c1.href = fit(h.primaryCta?.href); c1.firstElementChild.textContent = pick(h.primaryCta?.label);
+  c2.href = fit(h.secondaryCta?.href); c2.lastElementChild.textContent = pick(h.secondaryCta?.label);
+  const [prev, next] = counterEl.querySelectorAll('.hero__arrow');
+  prev.setAttribute('aria-label', lang() === 'ar' ? 'الوجه السابق' : 'Previous face');
+  next.setAttribute('aria-label', lang() === 'ar' ? 'الوجه التالي' : 'Next face');
+  counterEl.setAttribute('aria-label', lang() === 'ar' ? 'مزايا المنصة' : 'Platform highlights');
+  const total = h.pillars.length;
+  counterEl.querySelector('.hero__num-total').textContent = pad(total);
+  counterEl.querySelector('.hero__track').innerHTML = h.pillars.map(() => '<i></i>').join('');
+  updateCounter(activeFace, true);
+}
+
+function updateCounter(index, instant = false) {
+  const pillars = config.hero.pillars;
+  const p = pillars[index % pillars.length];
+  const num = counterEl.querySelector('.hero__num-current span');
+  const link = counterEl.querySelector('.hero__pillar');
+  counterEl.querySelectorAll('.hero__track i').forEach((el, i) => el.classList.toggle('is-active', i === index));
+  const apply = () => {
+    num.textContent = pad(index + 1);
+    link.href = fit(p.href);
+    link.querySelector('b').textContent = pick(p.title);
+    link.querySelector('span').textContent = pick(p.text);
+    link.classList.remove('is-changing');
+    num.style.transform = ''; num.style.opacity = '';
+  };
+  if (instant || reduceMotion) return apply();
+  link.classList.add('is-changing');
+  num.style.transform = 'translateY(-100%)'; num.style.opacity = '0';
+  setTimeout(apply, 260);
+}
+
+/* --------------------------------------------------------------- config */
+async function loadConfig() {
+  try {
+    const res = await fetch('data/site.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const site = await res.json();
+    config = {
+      brand: { ...config.brand, ...site.brand, logoMark: site.brand?.logoMark || site.brand?.logo || DEFAULT_LOGO },
+      theme: { ...config.theme, ...site.theme },
+      hero: { ...config.hero, ...site.hero, pillars: site.hero?.pillars?.length ? site.hero.pillars.slice(0, 6) : config.hero.pillars }
+    };
+  } catch { /* keep built-in defaults */ }
+}
+
+const onLang = () => { renderCopy(); refreshText(); };
+document.addEventListener('app:langchange', onLang);
+document.addEventListener('app:ready', onLang);
+
+await loadConfig();
+renderCopy();
+
+/* ================================================================ WebGL */
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+} catch (err) {
+  console.warn('[hero] WebGL unavailable, using the static fallback.', err);
+  hero.classList.add('hero--fallback', 'is-ready');
+}
+
+if (renderer) initScene();
+
+function initScene() {
+  renderer.setClearColor(0x050507, 1);
+  const maxDpr = coarse ? 1.5 : 2;
+  const SAMPLES = coarse ? 8 : 14;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.set(0, 0, 7);
+
+  /* ---------- headline texture (2D canvas → WebGL) */
+  const textCanvas = document.createElement('canvas');
+  const tctx = textCanvas.getContext('2d');
+  const textTex = new THREE.CanvasTexture(textCanvas);
+  textTex.minFilter = THREE.LinearFilter;
+  textTex.generateMipmaps = false;
+
+  /* ---------- logo texture */
+  const logoCanvas = document.createElement('canvas');
+  logoCanvas.width = logoCanvas.height = 1024;
+  const logoTex = new THREE.CanvasTexture(logoCanvas);
+  logoTex.anisotropy = 4;
+  function drawLogo(img) {
+    const c = logoCanvas.getContext('2d');
+    c.clearRect(0, 0, 1024, 1024);
+    const glow = c.createRadialGradient(512, 512, 0, 512, 512, 512);
+    glow.addColorStop(0, 'rgba(255,255,255,0.16)');
+    glow.addColorStop(0.55, 'rgba(255,255,255,0.04)');
+    glow.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = glow;
+    c.fillRect(0, 0, 1024, 1024);
+    if (img) {
+      const s = 700 / Math.max(img.naturalWidth || 1, img.naturalHeight || 1);
+      const w = (img.naturalWidth || 700) * s, h = (img.naturalHeight || 700) * s;
+      c.drawImage(img, 512 - w / 2, 512 - h / 2, w, h);
+    }
+    logoTex.needsUpdate = true;
+  }
+  drawLogo(null);
+  function loadLogo(src) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => drawLogo(img);
+    img.onerror = () => { if (src !== DEFAULT_LOGO) loadLogo(DEFAULT_LOGO); };
+    img.src = src;
+  }
+  loadLogo(config.brand.logoMark || DEFAULT_LOGO);
+
+  const col = (hex) => new THREE.Color(hex);
+  const uniforms = {
+    uText: { value: textTex },
+    uScene: { value: null },
+    uLogo: { value: logoTex },
+    uRes: { value: new THREE.Vector2(1, 1) },
+    uTime: { value: 0 },
+    uC1: { value: col(config.theme.primary || '#8B7CFF') },
+    uC2: { value: col(config.theme.secondary || '#4FD1E8') },
+    uC3: { value: col(config.theme.highlight || '#FF6BB3') },
+    uCenter: { value: new THREE.Vector3() },
+    uLogoSize: { value: 1 },
+    uLogoMix: { value: 0 },
+    uIorR: { value: 1.14 },
+    uIorB: { value: 1.24 },
+    uRefract: { value: 0.32 },
+    uChroma: { value: 0.09 },
+    uLight: { value: new THREE.Vector3(-0.55, 0.85, 0.75).normalize() },
+    uShininess: { value: 90 },
+    uFresnel: { value: 4.0 }
+  };
+
+  // Background colour function shared by the backdrop and the back-face pass.
+  const BG_GLSL = /* glsl */`
+    uniform sampler2D uText;
+    uniform vec2 uRes;
+    uniform float uTime;
+    uniform vec3 uC1, uC2, uC3;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    vec3 bgColor(vec2 uv) {
+      vec2 p = (uv - 0.5) * vec2(uRes.x / uRes.y, 1.0);
+      float t = uTime * 0.11;
+      vec2 o1 = vec2(cos(t) * 0.42, sin(t * 1.3) * 0.16);
+      vec2 o2 = vec2(cos(t * 0.8 + 2.1) * 0.46, sin(t * 1.1 + 1.0) * 0.2);
+      vec2 o3 = vec2(cos(t * 0.6 + 4.2) * 0.36, sin(t * 0.9 + 3.0) * 0.22);
+      vec3 c = vec3(0.016, 0.016, 0.024);
+      c += uC1 * 0.17 * exp(-dot(p - o1, p - o1) * 5.5);
+      c += uC2 * 0.12 * exp(-dot(p - o2, p - o2) * 6.5);
+      c += uC3 * 0.11 * exp(-dot(p - o3, p - o3) * 7.5);
+      vec4 txt = texture2D(uText, clamp(uv, 0.0, 1.0));
+      return mix(c, txt.rgb, txt.a);
+    }`;
+
+  const bgMat = new THREE.ShaderMaterial({
+    uniforms,
+    depthWrite: false,
+    vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }`,
+    fragmentShader: /* glsl */`
+      varying vec2 vUv;
+      ${BG_GLSL}
+      void main() {
+        vec3 c = bgColor(vUv);
+        c += (hash(gl_FragCoord.xy + fract(uTime) * 91.7) - 0.5) * 0.018;
+        gl_FragColor = vec4(c, 1.0);
+      }`
+  });
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+  bg.frustumCulled = false;
+  bg.renderOrder = -1;
+  scene.add(bg);
+
+  const GLASS_VERT = /* glsl */`
+    varying vec3 vNormal;
+    varying vec3 vViewPos;
+    void main() {
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      vViewPos = mv.xyz;
+      vNormal = normalize(normalMatrix * normal);
+      gl_Position = projectionMatrix * mv;
+    }`;
+
+  // Spectral weights: x = 0 (red) … 1 (violet). Triangle basis sums to white.
+  const SPECTRAL = /* glsl */`
+    vec3 spectral(float x) {
+      return clamp(vec3(1.0 - abs(x) * 2.0, 1.0 - abs(x - 0.5) * 2.0, 1.0 - abs(x - 1.0) * 2.0), 0.0, 1.0);
+    }`;
+
+  // Pass 1: back faces refract the backdrop.
+  const backMat = new THREE.ShaderMaterial({
+    uniforms,
+    side: THREE.BackSide,
+    vertexShader: GLASS_VERT,
+    fragmentShader: /* glsl */`
+      #define SAMPLES ${SAMPLES}
+      varying vec3 vNormal;
+      varying vec3 vViewPos;
+      uniform float uIorR, uIorB, uRefract, uChroma;
+      ${BG_GLSL}
+      ${SPECTRAL}
+      void main() {
+        vec3 N = -normalize(vNormal);
+        vec3 V = normalize(vViewPos);
+        vec2 uv = gl_FragCoord.xy / uRes;
+        vec2 aspect = vec2(uRes.y / uRes.x, 1.0);
+        vec3 acc = vec3(0.0), wsum = vec3(0.0);
+        for (int i = 0; i < SAMPLES; i++) {
+          float x = float(i) / float(SAMPLES - 1);
+          vec3 R = refract(V, N, 1.0 / mix(uIorR, uIorB, x));
+          vec3 w = spectral(x);
+          acc += bgColor(uv + R.xy * aspect * (uRefract + x * uChroma)) * w;
+          wsum += w;
+        }
+        gl_FragColor = vec4(acc / wsum * 0.92, 1.0);
+      }`
+  });
+
+  // Pass 2: front faces refract pass 1 + the logo floating inside the glass.
+  const frontMat = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: GLASS_VERT,
+    fragmentShader: /* glsl */`
+      #define SAMPLES ${SAMPLES}
+      varying vec3 vNormal;
+      varying vec3 vViewPos;
+      uniform sampler2D uScene;
+      uniform sampler2D uLogo;
+      uniform vec2 uRes;
+      uniform vec3 uCenter;
+      uniform float uLogoSize, uLogoMix;
+      uniform float uIorR, uIorB, uRefract, uChroma, uShininess, uFresnel;
+      uniform vec3 uLight;
+      ${SPECTRAL}
+      vec3 sampleAt(vec2 uv, vec3 P, vec3 R) {
+        vec3 c = texture2D(uScene, clamp(uv, 0.0, 1.0)).rgb;
+        // Billboard plane through the cube centre, facing the camera.
+        if (R.z < -1e-4) {
+          float t = (uCenter.z - P.z) / R.z;
+          vec2 luv = ((P.xy + R.xy * t) - uCenter.xy) / uLogoSize + 0.5;
+          if (t > 0.0 && luv.x > 0.0 && luv.x < 1.0 && luv.y > 0.0 && luv.y < 1.0) {
+            vec4 L = texture2D(uLogo, luv);
+            c = mix(c, L.rgb, L.a * uLogoMix);
+          }
+        }
+        return c;
+      }
+      void main() {
+        vec3 N = normalize(vNormal);
+        vec3 V = normalize(vViewPos);
+        vec2 uv = gl_FragCoord.xy / uRes;
+        vec2 aspect = vec2(uRes.y / uRes.x, 1.0);
+        vec3 acc = vec3(0.0), wsum = vec3(0.0);
+        for (int i = 0; i < SAMPLES; i++) {
+          float x = float(i) / float(SAMPLES - 1);
+          vec3 R = refract(V, N, 1.0 / mix(uIorR, uIorB, x));
+          vec3 w = spectral(x);
+          acc += sampleAt(uv + R.xy * aspect * (uRefract + x * uChroma), vViewPos, R) * w;
+          wsum += w;
+        }
+        vec3 col = acc / wsum;
+
+        // Lighting: two speculars, fresnel rim and a soft sky reflection.
+        float fres = pow(clamp(1.0 + dot(V, N), 0.0, 1.0), uFresnel);
+        vec3 H1 = normalize(uLight - V);
+        vec3 H2 = normalize(normalize(vec3(0.7, -0.35, 0.6)) - V);
+        float spec = pow(max(dot(N, H1), 0.0), uShininess) * 0.95
+                   + pow(max(dot(N, H2), 0.0), uShininess * 0.6) * 0.25;
+        vec3 Rf = reflect(V, N);
+        col += smoothstep(0.15, 1.0, Rf.y) * 0.06;
+        col = mix(col, vec3(1.0), fres * 0.42);
+        col += spec;
+        col *= vec3(0.975, 0.985, 1.0);
+        gl_FragColor = vec4(col, 1.0);
+      }`
+  });
+
+  /* ---------- glass mesh (rounded cube GLB, RoundedBox fallback) */
+  const pivot = new THREE.Group();
+  scene.add(pivot);
+  const fallbackGeo = new RoundedBoxGeometry(1, 1, 1, 8, 0.12);
+  const glass = new THREE.Mesh(fallbackGeo, frontMat);
+  pivot.add(glass);
+
+  function normalizeGeometry(geo) {
+    geo.computeBoundingBox();
+    const box = geo.boundingBox;
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    geo.translate(-center.x, -center.y, -center.z);
+    const s = 1 / Math.max(size.x, size.y, size.z);
+    geo.scale(s, s, s);
+    geo.computeBoundingSphere();
+    return geo;
+  }
+
+  function loadModel(url) {
+    if (!url) return;
+    const loader = new GLTFLoader();
+    const draco = new DRACOLoader();
+    draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    loader.setDRACOLoader(draco);
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.load(url, (gltf) => {
+      try {
+        gltf.scene.updateMatrixWorld(true);
+        const parts = [];
+        gltf.scene.traverse((o) => {
+          if (!o.isMesh || !o.geometry?.attributes?.position) return;
+          let g = o.geometry.clone();
+          for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name);
+          g.morphAttributes = {};
+          if (g.index) g = g.toNonIndexed();
+          g.applyMatrix4(o.matrixWorld);
+          parts.push(g);
+        });
+        if (!parts.length) throw new Error('no mesh in model');
+        const hasNormals = parts.every((g) => g.attributes.normal);
+        if (!hasNormals) parts.forEach((g) => g.deleteAttribute('normal'));
+        let merged = parts.length > 1 ? BufferGeometryUtils.mergeGeometries(parts, false) : parts[0];
+        if (!merged) throw new Error('merge failed');
+        if (!hasNormals) {
+          merged = BufferGeometryUtils.mergeVertices(merged, 1e-4);
+          merged.computeVertexNormals();
+        }
+        glass.geometry = normalizeGeometry(merged);
+        fallbackGeo.dispose();
+      } catch (err) {
+        console.warn('[hero] GLB unusable, keeping RoundedBoxGeometry.', err);
+      }
+    }, undefined, (err) => console.warn('[hero] GLB failed to load, using RoundedBoxGeometry.', err?.message || err));
+  }
+  loadModel(config.hero.model || MODEL_URL);
+
+  /* ---------- render target for the back-face pass */
+  const backRT = new THREE.WebGLRenderTarget(2, 2, { depthBuffer: true });
+  uniforms.uScene.value = backRT.texture;
+
+  /* ---------- sizing */
+  let W = 1, H = 1, dpr = 1, baseScale = 1, shift = 0, visH = 1;
+  function drawText() {
+    const cw = Math.max(2, Math.round(W * dpr)), ch = Math.max(2, Math.round(H * dpr));
+    textCanvas.width = cw; textCanvas.height = ch;
+    const ar = lang() === 'ar';
+    const raw = String(pick(config.hero.headline) || '').trim();
+    const text = ar ? raw : raw.toUpperCase();
+    const family = ar ? '"Tajawal", "Poppins", sans-serif' : '"Poppins", "Tajawal", sans-serif';
+    const words = text.split(/\s+/).filter(Boolean);
+    const portrait = cw / ch < 1.05;
+    let lines = [text];
+    if (portrait && words.length > 1) {
+      const mid = Math.ceil(words.length / 2);
+      lines = [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+    }
+    tctx.clearRect(0, 0, cw, ch);
+    tctx.direction = ar ? 'rtl' : 'ltr';
+    tctx.textAlign = 'center';
+    tctx.textBaseline = 'alphabetic';
+    const setFont = (px) => {
+      tctx.font = `800 ${px}px ${family}`;
+      if ('letterSpacing' in tctx) tctx.letterSpacing = ar ? '0px' : `${-0.045 * px}px`;
+    };
+    setFont(100);
+    const widest = Math.max(...lines.map((l) => tctx.measureText(l).width), 1);
+    const widthFrac = portrait ? 0.9 : W >= 1000 ? 0.7 : 0.86;
+    let size = (100 * cw * widthFrac) / widest;
+    size = Math.min(size, ch * (lines.length > 1 ? 0.24 : 0.4));
+    setFont(size);
+    const metrics = lines.map((l) => tctx.measureText(l));
+    const asc = Math.max(...metrics.map((m) => m.actualBoundingBoxAscent || size * 0.72));
+    const desc = Math.max(...metrics.map((m) => m.actualBoundingBoxDescent || size * 0.05));
+    const lineH = (asc + desc) * (ar ? 1.12 : 1.04);
+    const blockH = lineH * (lines.length - 1) + asc + desc;
+    const top = ch / 2 - blockH / 2 - ch * shift;
+    const textW = (widest * size) / 100;
+    const left = Math.max(Math.round(16 * dpr), cw / 2 - textW / 2), right = Math.min(cw - Math.round(16 * dpr), cw / 2 + textW / 2);
+
+    // Hairline guides and micro labels — subtle structure for the glass to bend.
+    tctx.save();
+    tctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    tctx.lineWidth = Math.max(1, dpr);
+    const gy1 = Math.round(top - ch * 0.045), gy2 = Math.round(top + blockH + ch * 0.045);
+    for (const y of [gy1, gy2]) { tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(cw, y); tctx.stroke(); }
+    for (const fx of [0.25, 0.5, 0.75]) { tctx.beginPath(); tctx.moveTo(Math.round(cw * fx), 0); tctx.lineTo(Math.round(cw * fx), ch); tctx.stroke(); }
+    tctx.font = `500 ${Math.round(11 * dpr)}px "Poppins", sans-serif`;
+    if ('letterSpacing' in tctx) tctx.letterSpacing = `${2.5 * dpr}px`;
+    tctx.fillStyle = 'rgba(255,255,255,0.38)';
+    tctx.direction = 'ltr';
+    tctx.textAlign = 'left';
+    tctx.fillText('(01)', left, gy1 - 10 * dpr);
+    tctx.textAlign = 'right';
+    tctx.fillText(String(pick(config.brand.shortName || config.brand.name)).toUpperCase(), right, gy1 - 10 * dpr);
+    tctx.textAlign = 'left';
+    tctx.fillText('LIVE · VIDEO · QUIZ', left, gy2 + 22 * dpr);
+    tctx.textAlign = 'right';
+    tctx.fillText(`© ${new Date().getFullYear()}`, right, gy2 + 22 * dpr);
+    tctx.restore();
+
+    // The headline.
+    setFont(size);
+    tctx.direction = ar ? 'rtl' : 'ltr';
+    tctx.textAlign = 'center';
+    tctx.fillStyle = '#ffffff';
+    lines.forEach((l, i) => tctx.fillText(l, cw / 2, top + asc + i * lineH));
+    textTex.needsUpdate = true;
+  }
+  refreshText = drawText;
+
+  function resize() {
+    const rect = hero.getBoundingClientRect();
+    W = Math.max(1, rect.width); H = Math.max(1, rect.height);
+    dpr = Math.min(window.devicePixelRatio || 1, maxDpr, 3840 / W);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(W, H, false);
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    const db = renderer.getDrawingBufferSize(new THREE.Vector2());
+    backRT.setSize(db.x, db.y);
+    uniforms.uRes.value.copy(db);
+    visH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const visW = visH * camera.aspect;
+    shift = W / H < 1.05 ? 0.07 : 0;
+    baseScale = W / H >= 1 ? Math.min(visH * 0.4, visW * 0.3) : Math.min(visW * 0.52, visH * 0.3);
+    drawText();
+  }
+
+  /* ---------- faces → pillars (front, left, back, right, top, bottom) */
+  const FACES = [
+    new THREE.Vector3(0, 0, 1), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 0, -1),
+    new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -1, 0)
+  ];
+  const TILT = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.36, -0.52, 0.06));
+  const Z = new THREE.Vector3(0, 0, 1);
+  const faceQuat = (i) => TILT.clone().multiply(new THREE.Quaternion().setFromUnitVectors(FACES[i], Z));
+  glass.quaternion.copy(faceQuat(0));
+
+  const tmpV = new THREE.Vector3();
+  function frontFace() {
+    let best = activeFace, bestZ = tmpV.copy(FACES[activeFace]).applyQuaternion(glass.quaternion).z + 0.06;
+    FACES.forEach((n, i) => {
+      const z = tmpV.copy(n).applyQuaternion(glass.quaternion).z;
+      if (z > bestZ) { bestZ = z; best = i; }
+    });
+    return best;
+  }
+
+  /* ---------- interaction: drag with inertia, idle spin, hover tilt */
+  const vel = new THREE.Vector2();     // rad/s around world Y (x) and X (y)
+  const qx = new THREE.Quaternion(), qy = new THREE.Quaternion();
+  const AX = new THREE.Vector3(1, 0, 0), AY = new THREE.Vector3(0, 1, 0);
+  let dragging = false, lastX = 0, lastY = 0, lastT = 0, idleFor = 0, tween = null;
+  const hover = new THREE.Vector2(), hoverTarget = new THREE.Vector2();
+
+  function rotate(ax, ay) {
+    qy.setFromAxisAngle(AY, ax);
+    qx.setFromAxisAngle(AX, ay);
+    glass.quaternion.premultiply(qy).premultiply(qx).normalize();
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true; tween = null;
+    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+    vel.set(0, 0);
+    canvas.setPointerCapture(e.pointerId);
+    hero.classList.add('is-dragging', 'has-interacted');
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    hoverTarget.set(((e.clientX - r.left) / r.width - 0.5) * 2, ((e.clientY - r.top) / r.height - 0.5) * 2);
+    if (!dragging) return;
+    const now = performance.now();
+    const dt = Math.max(1, now - lastT) / 1000;
+    const k = Math.PI * 1.25 / Math.min(W, H);
+    const ax = (e.clientX - lastX) * k, ay = (e.clientY - lastY) * k;
+    rotate(ax, ay);
+    vel.lerp(new THREE.Vector2(ax / dt, ay / dt), 0.6);
+    lastX = e.clientX; lastY = e.clientY; lastT = now;
+    idleFor = 0;
+  });
+  const release = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    hero.classList.remove('is-dragging');
+    if (performance.now() - lastT > 90) vel.set(0, 0);
+    vel.clampLength(0, 9);
+    if (e.pointerType !== 'mouse') hoverTarget.set(0, 0);
+    try { canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+  };
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('pointerleave', () => hoverTarget.set(0, 0));
+
+  function goTo(index) {
+    const n = FACES.length;
+    const target = ((index % n) + n) % n;
+    tween = { from: glass.quaternion.clone(), to: faceQuat(target), start: performance.now(), dur: reduceMotion ? 10 : 1150 };
+    vel.set(0, 0);
+    idleFor = -4;   // hold the chosen face a moment before the idle spin resumes
+    hero.classList.add('has-interacted');
+  }
+  counterEl.querySelectorAll('.hero__arrow').forEach((b) => b.addEventListener('click', () => goTo(activeFace + Number(b.dataset.step))));
+
+  /* ---------- loop */
+  let running = false, raf = 0, last = performance.now(), firstFrame = true;
+  const bornAt = performance.now();
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    uniforms.uTime.value = now / 1000;
+
+    if (tween) {
+      const k = Math.min(1, (now - tween.start) / tween.dur);
+      glass.quaternion.slerpQuaternions(tween.from, tween.to, ease(k));
+      if (k >= 1) tween = null;
+    } else if (!dragging) {
+      if (vel.lengthSq() > 1e-6) {
+        rotate(vel.x * dt, vel.y * dt);
+        vel.multiplyScalar(Math.exp(-2.6 * dt));
+      }
+      idleFor += dt;
+      if (!reduceMotion && idleFor > 1.6) {
+        const ramp = Math.min(1, (idleFor - 1.6) / 1.8);
+        rotate(0.24 * ramp * dt, Math.sin(now / 2400) * 0.05 * ramp * dt);
+      }
+    }
+
+    hover.lerp(hoverTarget, 1 - Math.exp(-3 * dt));
+    pivot.rotation.set(hover.y * 0.1, hover.x * 0.14, 0);
+    const bob = reduceMotion ? 0 : Math.sin(now / 1600) * 0.035;
+    pivot.position.y = bob + visH * shift;
+    glass.scale.setScalar(baseScale);
+
+    // Logo plane size & position (view space).
+    glass.updateMatrixWorld();
+    uniforms.uCenter.value.setFromMatrixPosition(glass.matrixWorld).applyMatrix4(camera.matrixWorldInverse);
+    uniforms.uLogoSize.value = baseScale * 0.84;
+    uniforms.uLogoMix.value = ease(Math.min(1, Math.max(0, (now - bornAt - 250) / 1300)));
+
+    const face = frontFace();
+    if (face !== activeFace) { activeFace = face; updateCounter(face); }
+
+    glass.material = backMat;
+    renderer.setRenderTarget(backRT);
+    renderer.render(scene, camera);
+    glass.material = frontMat;
+    renderer.setRenderTarget(null);
+    renderer.render(scene, camera);
+
+    if (firstFrame) { firstFrame = false; hero.classList.add('is-ready'); }
+  }
+
+  function start() { if (!running) { running = true; last = performance.now(); raf = requestAnimationFrame(frame); } }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+
+  let inView = true;
+  new IntersectionObserver(([e]) => { inView = e.isIntersecting; inView && !document.hidden ? start() : stop(); }, { threshold: 0 }).observe(hero);
+  document.addEventListener('visibilitychange', () => (document.hidden || !inView ? stop() : start()));
+  new ResizeObserver(() => resize()).observe(hero);
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); stop(); hero.classList.add('hero--fallback'); });
+
+  resize();
+  start();
+  // Redraw the headline once the web fonts are ready.
+  Promise.race([
+    Promise.all([document.fonts.load('800 100px "Poppins"'), document.fonts.load('800 100px "Tajawal"', 'عالم')]),
+    new Promise((r) => setTimeout(r, 2500))
+  ]).then(drawText).catch(drawText);
+  document.fonts?.ready?.then(drawText);
+}
+</script>
+</body>
+</html>

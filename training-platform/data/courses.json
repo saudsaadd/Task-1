@@ -1,0 +1,235 @@
+{
+  "_help": "Courses & lessons. Lesson types: video (videoUrl: YouTube, Vimeo or .mp4 link), live (liveUrl = join link, embedUrl = optional stream embed, startsAt = ISO date with timezone, recordingUrl after the session) and reading (content). price 0 = free. See README.md.",
+
+  "categories": [
+    { "id": "design", "label": { "ar": "التصميم", "en": "Design" } },
+    { "id": "development", "label": { "ar": "البرمجة", "en": "Development" } },
+    { "id": "data", "label": { "ar": "البيانات", "en": "Data" } },
+    { "id": "ai", "label": { "ar": "الذكاء الاصطناعي", "en": "AI" } },
+    { "id": "business", "label": { "ar": "الأعمال والإدارة", "en": "Business" } }
+  ],
+
+  "courses": [
+    {
+      "id": "ui-ux-fundamentals",
+      "featured": true,
+      "category": "design",
+      "level": "beginner",
+      "icon": "pen",
+      "hue": 258,
+      "cover": "",
+      "title": { "ar": "أساسيات تصميم واجهات وتجربة المستخدم", "en": "UI/UX Design Fundamentals" },
+      "subtitle": { "ar": "من فهم المستخدم إلى نموذج أولي تفاعلي جاهز للاختبار.", "en": "From understanding users to a testable interactive prototype." },
+      "description": {
+        "ar": "دورة عملية تأخذك خطوة بخطوة عبر رحلة التصميم: البحث، بناء الشخصيات، هيكلة المعلومات، الإطارات السلكية، أنظمة التصميم، وانتهاءً بنموذج أولي تفاعلي تختبره مع مستخدمين حقيقيين.",
+        "en": "A hands-on course that walks you through the full design journey: research, personas, information architecture, wireframes, design systems and finally an interactive prototype you test with real users."
+      },
+      "hours": 18,
+      "price": 0,
+      "paymentLink": "",
+      "rating": 4.9,
+      "reviews": 1240,
+      "students": 5830,
+      "instructor": { "name": { "ar": "م. ريم الشمري", "en": "Eng. Reem Alshammari" }, "title": { "ar": "قائدة تصميم المنتجات", "en": "Product Design Lead" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "إجراء مقابلات واختبارات قابلية الاستخدام", "en": "Run user interviews and usability tests" },
+        { "ar": "بناء إطارات سلكية ونماذج أولية في Figma", "en": "Build wireframes and prototypes in Figma" },
+        { "ar": "تطبيق مبادئ التسلسل البصري والوصولية", "en": "Apply visual hierarchy and accessibility principles" },
+        { "ar": "إنشاء نظام تصميم مصغّر قابل لإعادة الاستخدام", "en": "Create a small reusable design system" }
+      ],
+      "quizId": "quiz-ui-ux",
+      "lessons": [
+        { "id": "uiux-1", "type": "video", "preview": true, "duration": 12, "title": { "ar": "ما هي تجربة المستخدم؟", "en": "What is user experience?" }, "summary": { "ar": "الفرق بين UI و UX ولماذا يبدأ كل شيء من المستخدم.", "en": "UI vs UX and why everything starts with the user." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "resources": [ { "label": { "ar": "ملخص الدرس (PDF)", "en": "Lesson summary (PDF)" }, "url": "https://example.com/files/uiux-1.pdf" } ] },
+        { "id": "uiux-2", "type": "video", "duration": 18, "title": { "ar": "البحث وبناء الشخصيات", "en": "Research & personas" }, "summary": { "ar": "كيف تخطط لمقابلة مستخدم وتحوّل النتائج إلى شخصيات.", "en": "Plan a user interview and turn findings into personas." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "resources": [] },
+        { "id": "uiux-3", "type": "reading", "duration": 10, "title": { "ar": "هيكلة المعلومات", "en": "Information architecture" }, "summary": { "ar": "تنظيم المحتوى وتسمية التنقل.", "en": "Organising content and naming navigation." }, "content": { "ar": "هيكلة المعلومات هي فن تنظيم المحتوى بحيث يجد المستخدم ما يريد دون تفكير. ابدأ بفرز البطاقات (Card Sorting) مع 5 إلى 8 مستخدمين، ثم ارسم خريطة الموقع، واختبر التسميات قبل أي تصميم بصري.\n\nقاعدة عملية: إذا احتاج المستخدم أكثر من ثلاث نقرات للوصول إلى مهمة أساسية، فراجع الهيكلة.", "en": "Information architecture is the craft of organising content so people find what they need without thinking. Start with card sorting with 5–8 users, draw the sitemap, then test your labels before any visual design.\n\nRule of thumb: if a core task takes more than three clicks, revisit the structure." } },
+        { "id": "uiux-4", "type": "live", "duration": 60, "title": { "ar": "ورشة مباشرة: من الإطار السلكي إلى النموذج", "en": "Live workshop: wireframe to prototype" }, "summary": { "ar": "نبني معًا نموذجًا أوليًا لتطبيق حجز.", "en": "We build a booking-app prototype together." }, "startsAt": "2026-10-12T19:00:00+03:00", "platform": "Zoom", "liveUrl": "https://example.com/live/uiux-workshop", "embedUrl": "", "recordingUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" },
+        { "id": "uiux-5", "type": "video", "duration": 22, "title": { "ar": "أنظمة التصميم والوصولية", "en": "Design systems & accessibility" }, "summary": { "ar": "الألوان، الخطوط، المكوّنات، والتباين.", "en": "Colour, type, components and contrast." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", "resources": [ { "label": { "ar": "قالب نظام التصميم", "en": "Design system template" }, "url": "https://example.com/files/design-system.fig" } ] },
+        { "id": "uiux-6", "type": "video", "duration": 16, "title": { "ar": "اختبار قابلية الاستخدام", "en": "Usability testing" }, "summary": { "ar": "صمّم سيناريو اختبار وحلّل النتائج.", "en": "Design a test script and analyse the results." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", "resources": [] }
+      ]
+    },
+
+    {
+      "id": "frontend-web",
+      "featured": true,
+      "category": "development",
+      "level": "intermediate",
+      "icon": "code",
+      "hue": 190,
+      "cover": "",
+      "title": { "ar": "تطوير الواجهات الأمامية الحديثة", "en": "Modern Front-End Development" },
+      "subtitle": { "ar": "HTML و CSS و JavaScript الحديثة لبناء مواقع سريعة ومتجاوبة.", "en": "Modern HTML, CSS and JavaScript for fast, responsive websites." },
+      "description": {
+        "ar": "ابنِ واجهات ويب احترافية من الصفر: تخطيطات Grid و Flexbox، التصميم المتجاوب، JavaScript الحديثة، التعامل مع الـ APIs، والأداء والوصولية، مع مشروع تخرج تنشره على الإنترنت.",
+        "en": "Build professional web interfaces from scratch: Grid and Flexbox layouts, responsive design, modern JavaScript, working with APIs, performance and accessibility, with a capstone you deploy online."
+      },
+      "hours": 32,
+      "price": 449,
+      "paymentLink": "",
+      "rating": 4.8,
+      "reviews": 860,
+      "students": 3920,
+      "instructor": { "name": { "ar": "م. عمر الحربي", "en": "Eng. Omar Alharbi" }, "title": { "ar": "مهندس واجهات أول", "en": "Senior Front-End Engineer" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "بناء تخطيطات متجاوبة بـ Grid و Flexbox", "en": "Build responsive layouts with Grid and Flexbox" },
+        { "ar": "كتابة JavaScript حديثة ومنظمة", "en": "Write clean, modern JavaScript" },
+        { "ar": "جلب البيانات من الـ APIs وعرضها", "en": "Fetch and render data from APIs" },
+        { "ar": "نشر مشروعك على Vercel", "en": "Deploy your project to Vercel" }
+      ],
+      "quizId": "quiz-frontend",
+      "lessons": [
+        { "id": "fe-1", "type": "video", "preview": true, "duration": 15, "title": { "ar": "بنية صفحة الويب الحديثة", "en": "Anatomy of a modern web page" }, "summary": { "ar": "HTML الدلالي ولماذا يهم.", "en": "Semantic HTML and why it matters." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "resources": [] },
+        { "id": "fe-2", "type": "video", "duration": 24, "title": { "ar": "تخطيطات Grid و Flexbox", "en": "Grid & Flexbox layouts" }, "summary": { "ar": "متى تستخدم كلًّا منهما.", "en": "When to use which." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "resources": [ { "label": { "ar": "ملف التمارين", "en": "Exercise files" }, "url": "https://example.com/files/layouts.zip" } ] },
+        { "id": "fe-3", "type": "video", "duration": 28, "title": { "ar": "JavaScript الحديثة", "en": "Modern JavaScript" }, "summary": { "ar": "الوحدات، الدوال السهمية، و async/await.", "en": "Modules, arrow functions and async/await." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", "resources": [] },
+        { "id": "fe-4", "type": "live", "duration": 90, "title": { "ar": "جلسة مباشرة: بناء تطبيق مع API", "en": "Live session: build an app with an API" }, "summary": { "ar": "برمجة مباشرة مع أسئلة وأجوبة.", "en": "Live coding with Q&A." }, "startsAt": "2026-10-15T20:00:00+03:00", "platform": "YouTube Live", "liveUrl": "https://example.com/live/frontend-api", "embedUrl": "", "recordingUrl": "" },
+        { "id": "fe-5", "type": "reading", "duration": 12, "title": { "ar": "قائمة فحص الأداء", "en": "Performance checklist" }, "summary": { "ar": "خطوات عملية لتسريع موقعك.", "en": "Practical steps to speed up your site." }, "content": { "ar": "1) ضغط الصور واستخدام صيغ حديثة مثل AVIF و WebP.\n2) تحميل الخطوط بذكاء مع font-display: swap.\n3) تأجيل السكربتات غير الضرورية.\n4) قياس النتائج دائمًا عبر Lighthouse قبل وبعد كل تحسين.", "en": "1) Compress images and use modern formats like AVIF and WebP.\n2) Load fonts smartly with font-display: swap.\n3) Defer non-critical scripts.\n4) Always measure with Lighthouse before and after each change." } },
+        { "id": "fe-6", "type": "video", "duration": 20, "title": { "ar": "النشر على Vercel", "en": "Deploying to Vercel" }, "summary": { "ar": "من المستودع إلى رابط مباشر.", "en": "From repository to a live URL." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", "resources": [] }
+      ]
+    },
+
+    {
+      "id": "data-analysis",
+      "featured": true,
+      "category": "data",
+      "level": "intermediate",
+      "icon": "chart",
+      "hue": 160,
+      "cover": "",
+      "title": { "ar": "تحليل البيانات باستخدام بايثون", "en": "Data Analysis with Python" },
+      "subtitle": { "ar": "Pandas والرسوم البيانية واتخاذ القرار المبني على البيانات.", "en": "Pandas, charts and data-driven decisions." },
+      "description": {
+        "ar": "تعلّم تنظيف البيانات واستكشافها وتحليلها باستخدام بايثون و Pandas، ثم حوّل النتائج إلى رسوم بيانية وتقارير واضحة تدعم القرار.",
+        "en": "Learn to clean, explore and analyse data with Python and Pandas, then turn results into clear charts and reports that support decisions."
+      },
+      "hours": 26,
+      "price": 399,
+      "paymentLink": "",
+      "rating": 4.8,
+      "reviews": 640,
+      "students": 2710,
+      "instructor": { "name": { "ar": "د. نورة القحطاني", "en": "Dr. Noura Alqahtani" }, "title": { "ar": "عالمة بيانات", "en": "Data Scientist" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "تنظيف البيانات ومعالجة القيم المفقودة", "en": "Clean data and handle missing values" },
+        { "ar": "التجميع والتحليل باستخدام Pandas", "en": "Group and analyse with Pandas" },
+        { "ar": "إنشاء رسوم بيانية معبّرة", "en": "Create meaningful charts" },
+        { "ar": "كتابة تقرير تحليلي متكامل", "en": "Write a complete analysis report" }
+      ],
+      "quizId": "quiz-data",
+      "lessons": [
+        { "id": "da-1", "type": "video", "preview": true, "duration": 14, "title": { "ar": "تجهيز بيئة العمل", "en": "Setting up your environment" }, "summary": { "ar": "Jupyter و Pandas في دقائق.", "en": "Jupyter and Pandas in minutes." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", "resources": [] },
+        { "id": "da-2", "type": "video", "duration": 26, "title": { "ar": "تنظيف البيانات", "en": "Cleaning data" }, "summary": { "ar": "القيم المفقودة والمكررة والأنواع.", "en": "Missing values, duplicates and types." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "resources": [ { "label": { "ar": "مجموعة بيانات التدريب (CSV)", "en": "Practice dataset (CSV)" }, "url": "https://example.com/files/sales.csv" } ] },
+        { "id": "da-3", "type": "video", "duration": 22, "title": { "ar": "التجميع والتحليل", "en": "Grouping & aggregation" }, "summary": { "ar": "groupby و pivot_table بأمثلة واقعية.", "en": "groupby and pivot_table with real examples." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "resources": [] },
+        { "id": "da-4", "type": "live", "duration": 75, "title": { "ar": "جلسة مباشرة: تحليل بيانات مبيعات", "en": "Live: analysing a sales dataset" }, "summary": { "ar": "حالة عملية من البداية للنهاية.", "en": "An end-to-end case study." }, "startsAt": "2026-10-20T19:30:00+03:00", "platform": "Microsoft Teams", "liveUrl": "https://example.com/live/data-sales", "embedUrl": "", "recordingUrl": "" },
+        { "id": "da-5", "type": "video", "duration": 19, "title": { "ar": "الرسوم البيانية التي تقنع", "en": "Charts that convince" }, "summary": { "ar": "اختيار الرسم المناسب لكل سؤال.", "en": "Choosing the right chart for each question." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", "resources": [] }
+      ]
+    },
+
+    {
+      "id": "ai-essentials",
+      "featured": true,
+      "category": "ai",
+      "level": "beginner",
+      "icon": "spark",
+      "hue": 320,
+      "cover": "",
+      "title": { "ar": "الذكاء الاصطناعي التطبيقي للمحترفين", "en": "Applied AI for Professionals" },
+      "subtitle": { "ar": "استخدم أدوات الذكاء الاصطناعي لمضاعفة إنتاجيتك بأمان.", "en": "Use AI tools to multiply your productivity, safely." },
+      "description": {
+        "ar": "دورة مكثفة لغير المبرمجين: كيف تعمل النماذج اللغوية، كتابة الأوامر الفعالة، أتمتة المهام اليومية، وتقييم المخرجات وحماية البيانات.",
+        "en": "An intensive course for non-programmers: how language models work, writing effective prompts, automating daily tasks, evaluating outputs and protecting data."
+      },
+      "hours": 14,
+      "price": 349,
+      "paymentLink": "",
+      "rating": 4.9,
+      "reviews": 910,
+      "students": 4480,
+      "instructor": { "name": { "ar": "م. فيصل الدوسري", "en": "Eng. Faisal Aldosari" }, "title": { "ar": "استشاري ذكاء اصطناعي", "en": "AI Consultant" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "فهم آلية عمل النماذج اللغوية وحدودها", "en": "Understand how language models work and their limits" },
+        { "ar": "كتابة أوامر واضحة تعطي نتائج دقيقة", "en": "Write clear prompts that give accurate results" },
+        { "ar": "أتمتة المهام المتكررة", "en": "Automate repetitive tasks" },
+        { "ar": "الاستخدام المسؤول وحماية البيانات", "en": "Responsible use and data protection" }
+      ],
+      "quizId": "quiz-ai",
+      "lessons": [
+        { "id": "ai-1", "type": "video", "preview": true, "duration": 13, "title": { "ar": "كيف تفكر النماذج اللغوية؟", "en": "How do language models work?" }, "summary": { "ar": "مفاهيم أساسية بلا تعقيد.", "en": "Core concepts without the jargon." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", "resources": [] },
+        { "id": "ai-2", "type": "video", "duration": 21, "title": { "ar": "فن كتابة الأوامر", "en": "The craft of prompting" }, "summary": { "ar": "السياق، الأمثلة، والصيغة المطلوبة.", "en": "Context, examples and the output format." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", "resources": [ { "label": { "ar": "مكتبة أوامر جاهزة", "en": "Prompt library" }, "url": "https://example.com/files/prompts.pdf" } ] },
+        { "id": "ai-3", "type": "live", "duration": 60, "title": { "ar": "ورشة مباشرة: أتمتة تقاريرك", "en": "Live workshop: automate your reports" }, "summary": { "ar": "تطبيق عملي على مهام حقيقية.", "en": "Hands-on with real tasks." }, "startsAt": "2026-10-09T18:00:00+03:00", "platform": "Zoom", "liveUrl": "https://example.com/live/ai-automation", "embedUrl": "", "recordingUrl": "" },
+        { "id": "ai-4", "type": "reading", "duration": 8, "title": { "ar": "الاستخدام المسؤول", "en": "Responsible use" }, "summary": { "ar": "الخصوصية والتحقق من المعلومات.", "en": "Privacy and fact-checking." }, "content": { "ar": "لا تشارك بيانات سرية أو شخصية مع أدوات غير معتمدة من جهتك. تحقق دائمًا من الأرقام والمراجع قبل الاعتماد عليها، واعتبر مخرجات الذكاء الاصطناعي مسودة أولى تحتاج مراجعتك.", "en": "Never share confidential or personal data with tools your organisation hasn't approved. Always verify numbers and references before relying on them, and treat AI output as a first draft that needs your review." } },
+        { "id": "ai-5", "type": "video", "duration": 17, "title": { "ar": "تقييم المخرجات", "en": "Evaluating outputs" }, "summary": { "ar": "كيف تعرف أن النتيجة جيدة؟", "en": "How do you know a result is good?" }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "resources": [] }
+      ]
+    },
+
+    {
+      "id": "digital-marketing",
+      "featured": false,
+      "category": "business",
+      "level": "beginner",
+      "icon": "megaphone",
+      "hue": 28,
+      "cover": "",
+      "title": { "ar": "استراتيجيات التسويق الرقمي", "en": "Digital Marketing Strategy" },
+      "subtitle": { "ar": "خطة تسويق متكاملة: محتوى، إعلانات، وقياس.", "en": "A complete marketing plan: content, ads and measurement." },
+      "description": {
+        "ar": "ضع خطة تسويق رقمي قابلة للتنفيذ: تحديد الجمهور، استراتيجية المحتوى، الحملات الإعلانية، وقياس العائد على الاستثمار بلوحات واضحة.",
+        "en": "Build an actionable digital marketing plan: audience definition, content strategy, ad campaigns and measuring ROI with clear dashboards."
+      },
+      "hours": 20,
+      "price": 299,
+      "paymentLink": "",
+      "rating": 4.7,
+      "reviews": 420,
+      "students": 1980,
+      "instructor": { "name": { "ar": "أ. لمى الزهراني", "en": "Lama Alzahrani" }, "title": { "ar": "مديرة تسويق رقمي", "en": "Digital Marketing Manager" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "تحديد الجمهور المستهدف بدقة", "en": "Define your target audience precisely" },
+        { "ar": "بناء تقويم محتوى فعّال", "en": "Build an effective content calendar" },
+        { "ar": "إدارة حملات إعلانية مدفوعة", "en": "Run paid ad campaigns" },
+        { "ar": "قياس العائد وتحسين النتائج", "en": "Measure ROI and optimise" }
+      ],
+      "quizId": "quiz-marketing",
+      "lessons": [
+        { "id": "dm-1", "type": "video", "preview": true, "duration": 12, "title": { "ar": "قمع التسويق الرقمي", "en": "The digital marketing funnel" }, "summary": { "ar": "من الوعي إلى الولاء.", "en": "From awareness to loyalty." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "resources": [] },
+        { "id": "dm-2", "type": "video", "duration": 20, "title": { "ar": "استراتيجية المحتوى", "en": "Content strategy" }, "summary": { "ar": "ماذا تنشر ومتى وأين.", "en": "What to publish, when and where." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", "resources": [] },
+        { "id": "dm-3", "type": "video", "duration": 25, "title": { "ar": "الحملات الإعلانية", "en": "Paid campaigns" }, "summary": { "ar": "الاستهداف والميزانية والاختبار.", "en": "Targeting, budget and testing." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", "resources": [] },
+        { "id": "dm-4", "type": "live", "duration": 60, "title": { "ar": "جلسة مباشرة: مراجعة خطط المتدربين", "en": "Live: reviewing trainee plans" }, "summary": { "ar": "ملاحظات مباشرة على خططكم.", "en": "Live feedback on your plans." }, "startsAt": "2026-10-22T19:00:00+03:00", "platform": "Google Meet", "liveUrl": "https://example.com/live/marketing-review", "embedUrl": "", "recordingUrl": "" }
+      ]
+    },
+
+    {
+      "id": "agile-pm",
+      "featured": false,
+      "category": "business",
+      "level": "advanced",
+      "icon": "kanban",
+      "hue": 220,
+      "cover": "",
+      "title": { "ar": "إدارة المشاريع الرشيقة (Agile)", "en": "Agile Project Management" },
+      "subtitle": { "ar": "Scrum و Kanban لقيادة فرق عالية الأداء.", "en": "Scrum and Kanban to lead high-performing teams." },
+      "description": {
+        "ar": "تعمّق في منهجيات Agile: أدوار Scrum وطقوسه، لوحات Kanban، التقدير والتخطيط، وقياس أداء الفريق، مع دراسات حالة من مشاريع حقيقية.",
+        "en": "Go deep into Agile: Scrum roles and ceremonies, Kanban boards, estimation and planning, and measuring team performance, with case studies from real projects."
+      },
+      "hours": 24,
+      "price": 499,
+      "paymentLink": "",
+      "rating": 4.8,
+      "reviews": 380,
+      "students": 1540,
+      "instructor": { "name": { "ar": "م. سلطان المطيري", "en": "Eng. Sultan Almutairi" }, "title": { "ar": "مدرب Agile معتمد", "en": "Certified Agile Coach" }, "avatar": "" },
+      "outcomes": [
+        { "ar": "إدارة سباقات Scrum بفعالية", "en": "Run effective Scrum sprints" },
+        { "ar": "تصميم لوحات Kanban ذكية", "en": "Design smart Kanban boards" },
+        { "ar": "التقدير بنقاط القصة", "en": "Estimate with story points" },
+        { "ar": "قياس سرعة الفريق وتحسينها", "en": "Measure and improve team velocity" }
+      ],
+      "quizId": "quiz-agile",
+      "lessons": [
+        { "id": "pm-1", "type": "video", "preview": true, "duration": 16, "title": { "ar": "لماذا Agile؟", "en": "Why Agile?" }, "summary": { "ar": "قيم ومبادئ البيان الرشيق.", "en": "Values and principles of the Agile manifesto." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", "resources": [] },
+        { "id": "pm-2", "type": "video", "duration": 27, "title": { "ar": "إطار Scrum", "en": "The Scrum framework" }, "summary": { "ar": "الأدوار، الطقوس، والمخرجات.", "en": "Roles, events and artifacts." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "resources": [] },
+        { "id": "pm-3", "type": "video", "duration": 19, "title": { "ar": "لوحات Kanban", "en": "Kanban boards" }, "summary": { "ar": "حدود العمل الجاري وتدفق القيمة.", "en": "WIP limits and value flow." }, "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "resources": [] },
+        { "id": "pm-4", "type": "live", "duration": 90, "title": { "ar": "محاكاة مباشرة لسباق Scrum", "en": "Live Scrum sprint simulation" }, "summary": { "ar": "نعيش سباقًا كاملًا في ساعة ونصف.", "en": "A full sprint in ninety minutes." }, "startsAt": "2026-10-27T19:00:00+03:00", "platform": "Zoom", "liveUrl": "https://example.com/live/scrum-sim", "embedUrl": "", "recordingUrl": "" }
+      ]
+    }
+  ]
+}

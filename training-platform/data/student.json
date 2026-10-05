@@ -1,0 +1,17 @@
+{
+  "_help": "Demo student shown on the dashboard the first time someone opens the site (saved in the visitor's browser only). Set seedDemoData to false to start every visitor with an empty dashboard. daysAgo values are relative to the visitor's current date.",
+  "seedDemoData": true,
+  "profile": { "name": { "ar": "سارة أحمد", "en": "Sara Ahmed" }, "email": "sara@example.com", "avatar": "" },
+  "plan": "pro",
+  "enrollments": [
+    { "courseId": "ui-ux-fundamentals", "daysAgo": 40, "completed": ["uiux-1", "uiux-2", "uiux-3", "uiux-4", "uiux-5", "uiux-6"] },
+    { "courseId": "frontend-web", "daysAgo": 21, "completed": ["fe-1", "fe-2", "fe-3"] },
+    { "courseId": "ai-essentials", "daysAgo": 6, "completed": ["ai-1"] }
+  ],
+  "quizAttempts": [
+    { "quizId": "quiz-ui-ux", "daysAgo": 9, "percent": 64, "durationSec": 512 },
+    { "quizId": "quiz-ui-ux", "daysAgo": 7, "percent": 92, "durationSec": 431 },
+    { "quizId": "quiz-ai", "daysAgo": 2, "percent": 80, "durationSec": 205 }
+  ],
+  "activity": [35, 50, 0, 80, 45, 20, 60]
+}
