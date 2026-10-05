@@ -11,7 +11,8 @@ the captions and pronounced another way.
 
 Usage:
   python3 scripts/voiceover.py                        English, Kokoro voice af_heart
-  python3 scripts/voiceover.py --lang ar-sa           Saudi dialect, Piper voice ar_JO-kareem
+  python3 scripts/voiceover.py --lang ar              Modern Standard Arabic, Piper voice ar_JO-kareem
+  python3 scripts/voiceover.py --lang ar-sa           Saudi dialect, same voice
 Model files are looked up in $KOKORO_DIR / $PIPER_AR_DIR (default: ./models/...).
 """
 import argparse
@@ -48,6 +49,28 @@ SCRIPTS = {
             "From {switches}switches and sockets to complete {industrial}industrial setups,",
             ("Bahra Electric is your {trusted}trusted partner for power.", 50.0),
             "{choose}Choose quality, choose {bahra_last}Bahra!",
+        ]),
+    ],
+    # Modern Standard Arabic, fully vowelled with pausal endings before each pause.
+    "ar": [
+        (0.0, 1.2, [
+            "هَذَا {sparky}سْبَارْكِي، دَلِيلُكَ لِأَفْضَلِ الحُلُولِ الكَهْرَبَائِيَّةْ!",
+            "مَرْحَبًا بِكَ فِي {bahra}بَحْرَة إِلِكْتْرِيكْ، حَيْثُ يَلْتَقِي {innovation}الاِبْتِكَارُ {safety}بِالأَمَانِ التَّامّ.",
+        ]),
+        (12.0, 12.9, [
+            "مِنَ {wires}الأَسْلَاكِ وَالكَابْلَاتِ المُمْتَازَةْ، إِلَى {transformers}المُحَوِّلَاتِ القَوِيَّةِ "
+            "{busbars}وَقُضْبَانِ التَّوْصِيلْ،",
+            "{deliver}نُقَدِّمُ {performance}أَدَاءً كَهْرَبَائِيًّا لَا مَثِيلَ لَهُ فِي كُلِّ {project}مَشْرُوعْ.",
+        ]),
+        (28.0, 28.9, [
+            "نَحْنُ نَبْنِي أَسَاسَ {safety3}الأَمَانْ!",
+            "اِكْتَشِفْ أَنْظِمَةَ {grounding}التَّأْرِيضِ المَوْثُوقَةْ، {lightning}وَالحِمَايَةَ مِنَ الصَّوَاعِقْ، "
+            "{cable}وَتَنْظِيمَ الكَابْلَاتْ، {distribution}وَلَوْحَاتِ التَّوْزِيعِ المَتِينَةْ.",
+        ]),
+        (45.0, 45.6, [
+            "مِنَ {switches}المَفَاتِيحِ وَالمَقَابِسْ، إِلَى التَّجْهِيزَاتِ {industrial}الصِّنَاعِيَّةْ،",
+            ("بَحْرَة إِلِكْتْرِيكْ {trusted}شَرِيكُكَ المَوْثُوقُ فِي عَالَمِ الطَّاقَةْ.", 50.0),
+            "{choose}اِخْتَرِ الجَوْدَةْ، اِخْتَرْ {bahra_last}بحرة!~بَحْرَهْ!",
         ]),
     ],
     # Saudi dialect, fully vowelled so the phonemizer reads it the way it is spoken.
@@ -93,7 +116,7 @@ class KokoroVoice:
 class PiperArabicVoice:
     """Piper ar_JO-kareem through sherpa-onnx (espeak-ng phonemes, honours harakat)."""
 
-    def __init__(self, voice, speed):
+    def __init__(self, voice, speed, default_speed=1.0):
         import sherpa_onnx
         d = os.environ.get("PIPER_AR_DIR", os.path.join(ROOT, "models", "vits-piper-ar_JO-kareem-medium"))
         cfg = sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(
@@ -101,7 +124,7 @@ class PiperArabicVoice:
                 model=os.path.join(d, "ar_JO-kareem-medium.onnx"), tokens=os.path.join(d, "tokens.txt"),
                 data_dir=os.path.join(d, "espeak-ng-data"), noise_scale_w=0.6),
             num_threads=4))
-        self.tts, self.speed, self.voice, self.name = sherpa_onnx.OfflineTts(cfg), speed or 1.15, "ar_JO-kareem", "piper"
+        self.tts, self.speed, self.voice, self.name = sherpa_onnx.OfflineTts(cfg), speed or default_speed, "ar_JO-kareem", "piper"
 
     def say(self, text):
         a = self.tts.generate(text, sid=0, speed=self.speed)
@@ -152,7 +175,11 @@ def main():
     ap.add_argument("--speed", type=float)
     args = ap.parse_args()
 
-    tts = PiperArabicVoice(args.voice, args.speed) if args.lang.startswith("ar") else KokoroVoice(args.voice, args.speed)
+    if args.lang.startswith("ar"):
+        # the dialect script is longer, so it is read a little faster to fit the scenes
+        tts = PiperArabicVoice(args.voice, args.speed, 1.15 if args.lang == "ar-sa" else 1.1)
+    else:
+        tts = KokoroVoice(args.voice, args.speed)
     scenes_def = SCRIPTS[args.lang]
 
     os.makedirs(BUILD, exist_ok=True)

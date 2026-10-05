@@ -3,7 +3,8 @@
 | Version | File |
 |---|---|
 | English | **`output/bahra_electric_reel.mp4`** |
-| Saudi dialect (voiceover + Arabic captions) | **`output/bahra_electric_reel_sa.mp4`** |
+| Modern Standard Arabic / Fusha (voiceover + Arabic captions) | **`output/bahra_electric_reel_ar.mp4`** |
+| Saudi dialect (voiceover + Arabic captions) | `output/bahra_electric_reel_sa.mp4` |
 
 Both are 1080×1920, 30fps, H.264 + AAC, ~12.5 MB. The visuals, character and on-screen text are identical; only the voiceover and the bottom captions differ. The cover image is at `output/cover.jpg`.
 
@@ -22,7 +23,7 @@ The English voiceover follows the script word for word, with timed captions at t
 
 - `index.html` + `js/main.js`: all scenes drawn as SVG and animated with a GSAP timeline that can be seeked to any frame.
 - `js/character.js`: Sparky redrawn as vector art from the character sheet in `assets/reference/`, with separate joints (arms, forearm, hands, blinking).
-- `scripts/voiceover.py`: the voiceover script for both languages. Each `{cue}` marker before a word times an animation (e.g. a product card appears when its name is spoken). English uses Kokoro TTS; Saudi uses the Piper `ar_JO-kareem` voice via sherpa-onnx, fully vowelled so it reads like the spoken dialect.
+- `scripts/voiceover.py`: the voiceover script for both languages. Each `{cue}` marker before a word times an animation (e.g. a product card appears when its name is spoken). English uses Kokoro TTS; Arabic (Fusha `ar` and Saudi `ar-sa`) uses the Piper `ar_JO-kareem` voice via sherpa-onnx, with fully vowelled text for clear pronunciation.
 - `scripts/render.mjs`: renders the frames with headless Chromium (Playwright).
 - `scripts/audio.py`: background music and sound effects synthesised in code (royalty-free), with the music ducked under the voice.
 
@@ -33,6 +34,7 @@ npm install                      # gsap + playwright
 pip install -r requirements.txt  # kokoro-onnx, soundfile, numpy
 ./build.sh                       # downloads the voice model on first run, then builds the video
 VOICE=am_michael ./build.sh      # same video with a male voice
+REEL_LANG=ar ./build.sh          # Fusha Arabic version
 REEL_LANG=ar-sa ./build.sh       # Saudi version
 ```
 

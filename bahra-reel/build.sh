@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Rebuild the reel from scratch.
 #   ./build.sh                       English  -> output/bahra_electric_reel.mp4    (Kokoro, af_heart)
-#   REEL_LANG=ar-sa ./build.sh       Saudi    -> output/bahra_electric_reel_sa.mp4 (Piper, ar_JO-kareem)
+#   REEL_LANG=ar ./build.sh          Fusha    -> output/bahra_electric_reel_ar.mp4 (Piper, ar_JO-kareem)
+#   REEL_LANG=ar-sa ./build.sh       Saudi    -> output/bahra_electric_reel_sa.mp4 (same voice)
 #   VOICE=am_michael ./build.sh      any Kokoro voice id for the English version
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -22,7 +23,7 @@ else
       | tar xj -C models
   fi
   python3 scripts/voiceover.py --lang "$REEL_LANG"
-  OUT=output/bahra_electric_reel_sa
+  OUT=output/bahra_electric_reel_${REEL_LANG#ar-}
 fi
 
 rm -rf build/frames
