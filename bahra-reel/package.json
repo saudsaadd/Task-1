@@ -1,0 +1,13 @@
+{
+  "name": "bahra-reel",
+  "private": true,
+  "description": "60s vertical promo reel for Bahra Electric, rendered from HTML/SVG with GSAP + Playwright",
+  "type": "module",
+  "scripts": {
+    "render": "node scripts/render.mjs"
+  },
+  "dependencies": {
+    "gsap": "3.12.5",
+    "playwright": "1.56.1"
+  }
+}
