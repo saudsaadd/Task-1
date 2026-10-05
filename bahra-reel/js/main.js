@@ -6,6 +6,7 @@
   const $$ = (s) => Array.from(document.querySelectorAll(s));
   const NS = 'http://www.w3.org/2000/svg';
   const TL = window.TIMELINE;
+  const RTL = /^ar/.test(TL.lang || 'en');
   const SFX = (window.SFX = []);
   const sfx = (t, type, gain = 1) => SFX.push({ t: +t.toFixed(3), type, gain });
 
@@ -13,15 +14,10 @@
   let seed = 7;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
-  // time at which a word of the voiceover starts (scene index, word prefix)
-  function wt(scene, prefix, nth = 0) {
-    for (const s of TL.scenes[scene].sentences) {
-      for (const w of s.words) {
-        const clean = w.w.toLowerCase().replace(/[^a-z-]/g, '');
-        if (clean.startsWith(prefix.toLowerCase()) && nth-- === 0) return w.t;
-      }
-    }
-    throw new Error('word not found: ' + prefix);
+  // time (s) at which a cue word of the voiceover is spoken (see scripts/voiceover.py)
+  function cue(name) {
+    if (!(name in TL.cues)) throw new Error('missing cue: ' + name);
+    return TL.cues[name];
   }
 
   // ---------- build procedural decorations ----------
@@ -162,23 +158,23 @@
   squash(.82);
   headline('#h1', .95, 11.0);
   wave('R', 1.2, 4.7);
-  pop('#s1-bubble .pop', wt(0, 'sparky') - .3);
+  pop('#s1-bubble .pop', cue('sparky') - .3);
   unpop('#s1-bubble .pop', 4.85);
 
-  const tBahra = wt(0, 'bahra');
+  const tBahra = cue('bahra');
   arm('L', tBahra - .35, { s: 172, e: -8, hand: 'point' });
   tl.to(P, { gazeY: -1, gaze: -.3, duration: .3 }, tBahra - .35);
   tl.to('#logoBar', { scale: 1.14, duration: .22, ease: 'power2.out', yoyo: true, repeat: 1 }, tBahra);
   tl.fromTo('#logoBar .shine i', { left: -120 }, { left: 520, duration: .75, ease: 'power2.inOut' }, tBahra + .1);
   sfx(tBahra, 'chime', .7);
-  rest('L', wt(0, 'innovation') - .2);
-  tl.to(P, { gazeY: 0, gaze: -1, duration: .3 }, wt(0, 'innovation') - .2);
-  pop('#s1-badgeL .pop', wt(0, 'innovation') - .1);
-  tl.to(P, { gaze: 1, duration: .3 }, wt(0, 'safety') - .2);
-  pop('#s1-badgeR .pop', wt(0, 'safety') - .1);
-  thumbs('R', wt(0, 'safety') + .1);
-  tl.to(P, { gaze: 0, duration: .3 }, wt(0, 'safety') + .6);
-  rest('R', 11.0);
+  rest('L', cue('innovation') - .2);
+  tl.to(P, { gazeY: 0, gaze: -1, duration: .3 }, cue('innovation') - .2);
+  pop('#s1-badgeL .pop', cue('innovation') - .1);
+  tl.to(P, { gaze: 1, duration: .3 }, cue('safety') - .2);
+  pop('#s1-badgeR .pop', cue('safety') - .1);
+  thumbs('R', cue('safety') + .1);
+  tl.to(P, { gaze: 0, duration: .3 }, cue('safety') + .6);
+  rest('R', Math.max(11.0, cue('safety') + .9));
 
   // =====================================================================
   // SCENE 2  12 - 28 s : wires, cables, transformers, busbars
@@ -194,7 +190,7 @@
     tl.fromTo(sel, { x: 170, scale: .75, opacity: 0 }, { x: 0, scale: 1, opacity: 1, duration: .55, ease: 'back.out(1.6)' }, t);
     sfx(t, 'pop');
   };
-  const tW = wt(1, 'wires'), tT = wt(1, 'transformers'), tB = wt(1, 'busbars');
+  const tW = cue('wires'), tT = cue('transformers'), tB = cue('busbars');
   reveal('#card1 .pop', tW - .25);
   reveal('#card2 .pop', tT - .25);
   reveal('#card3 .pop', tB - .25);
@@ -204,12 +200,12 @@
   rest('R', tB + .9);
   tl.to(P, { gaze: 0, duration: .3 }, tB + .9);
 
-  const tPerf = wt(1, 'performance');
-  tl.to('#s2-cableGlow', { opacity: 1, duration: .25 }, wt(1, 'deliver'));
+  const tPerf = cue('performance');
+  tl.to('#s2-cableGlow', { opacity: 1, duration: .25 }, cue('deliver'));
   tl.fromTo('#s2 .cardGlow', { opacity: 0 }, { opacity: 1, duration: .25, stagger: .14, yoyo: true, repeat: 1 }, tPerf - .1);
   sfx(tPerf - .1, 'zap', .55);
-  thumbs('L', wt(1, 'project') - .2);
-  rest('L', 24.4);
+  thumbs('L', cue('project') - .2);
+  rest('L', Math.max(24.4, cue('project') + .9));
   ['#card1', '#card2', '#card3'].forEach((c, i) => pop(`${c} .chip`, 22.0 + i * .28));
   tl.fromTo('#s2-seal .pop', { scale: 2.6, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: -12, duration: .32, ease: 'power4.in' }, 24.6);
   sfx(24.9, 'stamp');
@@ -226,7 +222,7 @@
   hop(T + .25, 800, .55, 150);
   headline('#h3', T + .4, 44.2);
 
-  const tSafe = wt(2, 'safety');
+  const tSafe = cue('safety3');
   show('#s3-shieldBig', tSafe - .7);
   pop('#s3-shieldBig .pop', tSafe - .7, 'shield');
   tl.fromTo('#s3-shieldBig .pulse', { scale: 1, opacity: .9 }, { scale: 1.5, opacity: 0, duration: .8, repeat: 1, ease: 'power1.out', transformOrigin: '50% 50%' }, tSafe - .4);
@@ -246,7 +242,7 @@
     sfx(t, 'thunder');
     if (withTag) pop('#tag-lp .pop', t + .2, null);
   };
-  const tG = wt(2, 'grounding'), tL = wt(2, 'lightning');
+  const tG = cue('grounding'), tL = cue('lightning');
   pop('#tag-gr .pop', tG - .1);
   arm('L', tG - .3, { s: 72, e: 0, hand: 'point' });
   tl.fromTo('#s3-earthRings .ring', { scale: 1, opacity: 1 }, { scale: 3.2, opacity: 0, duration: .9, stagger: .25, transformOrigin: '50% 50%' }, tG);
@@ -254,7 +250,7 @@
   strike(tL - .05, true);
   rest('L', tL + 1.1);
 
-  const tC = wt(2, 'cable'), tD = wt(2, 'distribution');
+  const tC = cue('cable'), tD = cue('distribution');
   pop('#tile1 .pop', tC - .15);
   pop('#tile2 .pop', tC + .12);
   arm('R', tC - .3, { s: 168, e: 0, hand: 'point' });
@@ -263,7 +259,7 @@
   pop('#tile4 .pop', tD + .12);
   rest('R', tD + .9);
   tl.to(P, { gaze: 0, gazeY: 0, duration: .3 }, tD + .9);
-  ['#tile1', '#tile2', '#tile3', '#tile4'].forEach((s, i) => pop(`${s} .tick`, 38.7 + i * .3, 'ding'));
+  ['#tile1', '#tile2', '#tile3', '#tile4'].forEach((s, i) => pop(`${s} .tick`, Math.max(38.7, cue('distribution') + .8) + i * .3, 'ding'));
   strike(41.3, false);
   tl.to('#s3-shieldBig .pop', { scale: .38, duration: .18, yoyo: true, repeat: 1 }, 41.5);
   thumbs('R', 41.7);
@@ -281,7 +277,7 @@
   tl.set(P, { x: 1300, y: 1722, s: .9, gaze: -1 }, cut(T));
   hop(T + .2, 1010, .42, 70);
   hop(T + .66, 770, .46, 80);
-  const tPress = Math.max(46.55, wt(3, 'switches') + .15);
+  const tPress = Math.max(46.55, cue('switches') + .15);
   arm('L', tPress - .45, { s: 117, e: -4, hand: 'point' }, .4);
   tl.to('#rockerA', { attr: { y: 92 }, duration: .08 }, tPress);
   tl.set('#ledA', { attr: { fill: '#34D27B' } }, tPress);
@@ -292,7 +288,7 @@
   rest('L', tPress + .35);
   tl.to(P, { gaze: 0, duration: .3 }, tPress + .35);
   thumbs('R', tPress + .5);
-  const tInd = wt(3, 'industrial');
+  const tInd = cue('industrial');
   show('#s4-icons', tInd - .6);
   $$('#s4-icons .pop').forEach((p, i) => pop(p, tInd - .55 + i * .16));
 
@@ -314,21 +310,21 @@
   tl.to(P, { lift: 0, duration: .55, ease: 'back.out(1.3)' }, T + .25);
   wave('R', T + .85, 52.9);
 
-  const tTrust = wt(3, 'trusted');
+  const tTrust = cue('trusted');
   show('#tagline', tTrust - .45);
   tl.fromTo('#tagline .l1', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .4, ease: 'power2.out' }, tTrust - .45);
   tl.fromTo('#tagline .l2', { scale: .4, opacity: 0 }, { scale: 1, opacity: 1, duration: .55, ease: 'back.out(2)' }, tTrust - .2);
   sfx(tTrust - .2, 'pop');
 
-  const tCta = wt(3, 'choose');
+  const tCta = cue('choose');
   show('#cta', tCta - .15);
   tl.fromTo('#cta', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: .5, ease: 'back.out(2.2)' }, tCta - .15);
   sfx(tCta - .15, 'pop');
-  const tLast = wt(3, 'bahra', 1);
+  const tLast = cue('bahra_last');
   tl.to('#logoBar', { scale: 2.45, duration: .2, ease: 'power2.out', yoyo: true, repeat: 1 }, tLast);
   sfx(tLast, 'sparkle');
   thumbs('L', tLast - .3);
-  rest('L', 57.0);
+  rest('L', Math.max(57.0, tLast + 1.3));
   wave('R', 56.6, 59.2);
 
   // ---------- captions ----------
@@ -339,13 +335,13 @@
       s.words.forEach((w, i) => {
         cur.push(w);
         const last = i === s.words.length - 1;
-        if (last || cur.length >= 4 || /[,.!?]$/.test(w.w)) { chunks.push(cur); cur = []; }
+        if (last || cur.length >= 4 || /[,.!?،؟]$/.test(w.w)) { chunks.push(cur); cur = []; }
       });
     }
   }
   for (let i = chunks.length - 1; i > 0; i--) {   // fold one-word tails into the previous line
     const joined = [...chunks[i - 1], ...chunks[i]].map((w) => w.w).join(' ');
-    if (chunks[i].length === 1 && !/[,.!?]$/.test(chunks[i - 1].at(-1).w) && joined.length <= 30) {
+    if (chunks[i].length === 1 && !/[,.!?،؟]$/.test(chunks[i - 1].at(-1).w) && joined.length <= 30) {
       chunks[i - 1].push(...chunks[i]); chunks.splice(i, 1);
     }
   }
@@ -359,7 +355,7 @@
   function applyCaption(t) {
     const c = chunks.find((c) => t >= c.start && t < c.end) || null;
     if (c !== capShown) {
-      capEl.innerHTML = c ? `<div class="pill">${c.map((w) => `<b>${w.w}</b>`).join(' ')}</div>` : '';
+      capEl.innerHTML = c ? `<div class="pill${RTL ? ' ar' : ''}" dir="${RTL ? 'rtl' : 'ltr'}">${c.map((w) => `<b>${w.w}</b>`).join(' ')}</div>` : '';
       capShown = c;
     }
     if (!c) return;
@@ -431,6 +427,7 @@
   Promise.all([
     document.fonts.load('italic 900 86px Saira'), document.fonts.load('italic 800 33px Saira'),
     ...[500, 600, 700, 800, 900].map((w) => document.fonts.load(`${w} 40px Poppins`)),
+    document.fonts.load('800 54px Cairo', 'بحرة'),
   ]).then(() => document.fonts.ready).then(() => {
     window.renderFrame(0);
     requestAnimationFrame(() => { window.READY = true; });
