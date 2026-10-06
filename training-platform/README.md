@@ -24,6 +24,7 @@
 | الإشعارات | الجرس أعلى كل صفحة | إعلانات إدارية مع عدّاد غير المقروء وشريط إعلان مثبّت |
 | الحسابات | نافذة منبثقة في كل الصفحات | «تسجيل الدخول» و«حساب جديد» (الاسم، البريد، كلمة المرور) مع حفظ في `localStorage`، ثم تحويل تلقائي إلى لوحتي |
 | دليل الهوية | `brand.html` | الشعارات للتحميل، الألوان، الخطوط، قواعد الاستخدام |
+| استوديو AGILIX | `studio.html` (للمالك فقط) | محادثة Claude لكتابة المحتوى، وتوليد الصور والفيديو، ومكتبة لما ولّدته |
 
 زر **English / العربية** في الأعلى يبدّل اللغة واتجاه الصفحة (RTL / LTR) فورًا، ويتذكر اختيار الزائر.
 
@@ -94,6 +95,50 @@ npx serve .        # ثم افتح http://localhost:3000
 # أو مع المساعد الذكي:
 npx vercel dev
 ```
+
+---
+
+## استوديو AGILIX: أداة الذكاء الاصطناعي الخاصة بك (للمالك فقط)
+صفحة مخفية على `www.agilix.space/studio.html`، غير موجودة في القائمة ولا تظهر في محركات البحث، وتطلب كلمة مرور لا يعرفها غيرك. فيها أربعة أقسام:
+
+| القسم | ماذا يفعل | يعمل بـ |
+|---|---|---|
+| **المحادثة** | يكتب سكربتات الدروس، وأوصاف الدورات، وأسئلة الاختبارات بصيغة JSON جاهزة للصق في `quizzes.json`، والمنشورات التسويقية. يعرف هوية AGILIX ودوراتك | Claude |
+| **الصور** | يولّد أغلفة الدورات وصور التسويق من وصف نصي. زر «حسّن الوصف» يحوّل وصفك العربي إلى وصف إنجليزي مفصّل تفهمه النماذج أفضل | fal.ai (Nano Banana 2، Imagen 4) |
+| **الفيديو** | يولّد فيديو مع صوت (حتى 8 ثوانٍ) من وصف نصي، أو يحرّك صورة من المكتبة أو من جهازك | fal.ai (Google Veo 3.1 Fast) |
+| **المكتبة** | كل ما ولّدته: فتح، تنزيل، نسخ الرابط، تحريك صورة، إعادة استخدام الوصف، حذف | |
+
+### التفعيل (مرة واحدة)
+1. ارفع المشروع كاملًا كالعادة، ومعه `api/` و`package.json` و`vercel.json` و`studio.html` و`data/studio.json`.
+2. في Vercel ← مشروعك ← **Settings ← Environment Variables** أضف:
+
+   | المتغير | الوصف |
+   |---|---|
+   | `ADMIN_PASSWORD` | **مطلوب.** كلمة مرور الاستوديو، 12 حرفًا على الأقل. اجعلها طويلة وعشوائية |
+   | `ANTHROPIC_API_KEY` | للمحادثة وتحسين الأوصاف، من [console.anthropic.com](https://console.anthropic.com) (هو نفسه مفتاح المساعد الذكي) |
+   | `FAL_KEY` | للصور والفيديو، من [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) بعد شحن رصيد |
+
+3. أعد النشر (Redeploy)، ثم افتح `www.agilix.space/studio.html` وأدخل كلمة المرور.
+
+الصفحة تشرح لك حالتها بنفسها: إن نقص `ADMIN_PASSWORD` تعرض خطوات الإعداد، وإن ظهرت رسالة «تعذّر الوصول إلى خادم الاستوديو» فمعناها أن مجلد `api` لم يعمل كدوال خادم. في هذه الحالة انشر بإحدى طريقتَي النشر أعلاه (GitHub أو Vercel CLI).
+
+### استخدام النتائج في المنصة
+- **غلاف دورة:** انسخ رابط الصورة من المكتبة وضعه في `cover` للدورة داخل `data/courses.json`.
+- **فيديو درس:** انسخ رابط الفيديو وضعه في `videoUrl` للدرس.
+- الملفات محفوظة على خوادم fal.ai وقد لا تبقى روابطها للأبد. للاستخدام الدائم نزّل الملف وارفعه مع موقعك (مثلًا في `assets/media/`) أو على YouTube، وضع ذلك الرابط.
+- المحادثة والمكتبة محفوظتان في متصفحك فقط.
+
+### التكلفة والأمان
+- كل توليد يُخصم من رصيدك عند Anthropic أو fal.ai مباشرة، والفيديو أغلى بكثير من الصور.
+- كل طلب يمر عبر الخادم `api/studio.js`، فلا تصل المفاتيح إلى المتصفح أبدًا. ويقبل الخادم فقط النماذج والخيارات المكتوبة في `data/studio.json`.
+- تغيير `ADMIN_PASSWORD` (ثم إعادة النشر) يُخرج كل الجلسات المفتوحة. وبعد 8 محاولات خاطئة من نفس عنوان الإنترنت يتوقف الخادم عن قبول الدخول منه 15 دقيقة. هذه حماية إضافية فقط، والحماية الأساسية كلمة مرور طويلة وعشوائية.
+- الجلسة تنتهي بعد 12 ساعة.
+
+### إضافة نموذج أو تغييره
+النماذج في `data/studio.json`. انسخ معرّف النموذج من صفحته في [fal.ai/models](https://fal.ai/models) (مثل `fal-ai/kling-video/...`)، واكتب الخيارات التي تريد إظهارها تحت `options`. الصيغة موضحة داخل الملف.
+
+### حدود المحادثة
+مدة دالة الخادم 60 ثانية (`vercel.json`). إذا توقف رد طويل يظهر زر «أكمل». إن كان مشروعك يعمل بـ Fluid compute، وهو الافتراضي للمشاريع الجديدة، فيمكنك رفع `maxDuration` للدالة `api/studio.js` إلى 300 وإضافة المتغير `STUDIO_MAX_SECONDS=290`.
 
 ---
 
@@ -200,8 +245,10 @@ training-platform/
 │   ├── js/pages/*.js     ← منطق كل صفحة
 │   └── img/              ← الشعارات (اللاتيني، العربي، ثنائي اللغة) والأيقونة
 ├── brand.html            ← دليل الهوية البصرية
+├── studio.html           ← استوديو الذكاء الاصطناعي (للمالك فقط)
 ├── data/                 ← كل المحتوى القابل للتعديل (JSON)
 ├── api/chat.js           ← دالة Vercel للمساعد الذكي (Claude)
+├── api/studio.js         ← دالة Vercel للاستوديو: الدخول، Claude، وتوليد الصور والفيديو عبر fal.ai
 ├── vercel.json  package.json
 ```
 
@@ -225,5 +272,6 @@ training-platform/
 - **Edit content:** everything lives in `data/*.json` (`{ "ar": …, "en": … }` for every text); UI labels are in `data/i18n/`.
 - **Brand:** the name is always the Latin wordmark **AGILIX**, in both languages, never translated; the Arabic «أجيليكس» wordmark only accompanies it. Logo files live in `assets/img/` (`logo.svg`, `logo-white.svg`, `logo-bilingual.svg`, `logo-bilingual-white.svg`, `logo-ar.svg`, `logo-ar-white.svg`, `logo-mark.svg`, `favicon.svg`); colours in `site.json → theme`.
 - **Accounts:** the header “Sign in” / learner button opens a sign-in / create-account modal. Accounts live in `localStorage` (`academy.users.v1`, salted SHA-256 password hashes; `academy.session.v1`; per-user progress in `academy.state.v1:<id>`). After success the user is redirected to `dashboard.html`, or back to the page whose action required an account. Demo account: `demo@agilix.app` / `agilix2026`. These accounts are per-browser only: swap `signUp` / `signIn` / `signOut` in `assets/js/app.js` for a real auth service before launch.
+- **Owner studio (`studio.html`):** a hidden, password-protected AI workspace. Claude chat for course content (scripts, outlines, quiz JSON, posts), image generation (Nano Banana 2, Imagen 4) and video generation (Veo 3.1 Fast, text or image to video) through fal.ai, with a local library. Set `ADMIN_PASSWORD` (12+ characters), `ANTHROPIC_API_KEY` and `FAL_KEY` in Vercel and redeploy. All calls go through `api/studio.js` (HMAC-signed 12-hour tokens, model allowlist in `data/studio.json`, keys never reach the browser).
 - **Navigation:** logo + Home → `index.html`, Courses → `courses.html`, Pricing → `pricing.html`, Dashboard → `dashboard.html`, Contact → `contact.html` (relative links, also hard-coded in each HTML file).
 - **Before launch:** progress is stored in the visitor's browser; real accounts and payment-verified access need a backend (e.g. Supabase/Firebase + payment webhooks). Replace the sample testimonials, contact details and live links.

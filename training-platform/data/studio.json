@@ -1,0 +1,52 @@
+{
+  "_note": "Models for the admin studio (studio.html). Image and video models run on fal.ai (https://fal.ai/models): copy a model id from its API page, list the inputs you want to expose under options, and fixed inputs under defaults. The server only accepts the models and option values listed here.",
+  "image": [
+    {
+      "id": "fal-ai/nano-banana-2",
+      "label": { "ar": "Nano Banana 2 (Google)", "en": "Nano Banana 2 (Google)" },
+      "hint": { "ar": "سريع، ممتاز للتصاميم والصور التي فيها نص لاتيني", "en": "Fast; great for designs and images with Latin text" },
+      "options": [
+        { "param": "aspect_ratio", "label": "ratio", "values": ["1:1", "16:9", "9:16", "4:3", "3:4"], "default": "16:9" },
+        { "param": "num_images", "label": "count", "values": [1, 2, 3, 4], "default": 1 }
+      ],
+      "defaults": {}
+    },
+    {
+      "id": "fal-ai/imagen4/preview",
+      "label": { "ar": "Imagen 4 (Google)", "en": "Imagen 4 (Google)" },
+      "hint": { "ar": "صور واقعية عالية التفاصيل", "en": "Photorealistic, highly detailed images" },
+      "options": [
+        { "param": "aspect_ratio", "label": "ratio", "values": ["1:1", "16:9", "9:16", "4:3", "3:4"], "default": "16:9" },
+        { "param": "num_images", "label": "count", "values": [1, 2, 3, 4], "default": 1 }
+      ],
+      "defaults": {}
+    }
+  ],
+  "video": [
+    {
+      "id": "fal-ai/veo3.1/fast",
+      "label": { "ar": "Veo 3.1 Fast: من نص", "en": "Veo 3.1 Fast: from text" },
+      "hint": { "ar": "فيديو مع صوت من وصف نصي، حتى 8 ثوانٍ", "en": "Video with sound from a text prompt, up to 8 seconds" },
+      "options": [
+        { "param": "aspect_ratio", "label": "ratio", "values": ["16:9", "9:16"], "default": "16:9" },
+        { "param": "duration", "label": "duration", "values": ["4s", "6s", "8s"], "default": "8s" },
+        { "param": "resolution", "label": "resolution", "values": ["720p", "1080p"], "default": "720p" },
+        { "param": "generate_audio", "label": "audio", "values": [true, false], "default": true }
+      ],
+      "defaults": {}
+    },
+    {
+      "id": "fal-ai/veo3.1/fast/image-to-video",
+      "label": { "ar": "Veo 3.1 Fast: تحريك صورة", "en": "Veo 3.1 Fast: animate an image" },
+      "hint": { "ar": "يحوّل صورة إلى فيديو متحرك مع صوت", "en": "Turns an image into a moving video with sound" },
+      "image": { "param": "image_url" },
+      "options": [
+        { "param": "aspect_ratio", "label": "ratio", "values": ["auto", "16:9", "9:16"], "default": "auto" },
+        { "param": "duration", "label": "duration", "values": ["4s", "6s", "8s"], "default": "8s" },
+        { "param": "resolution", "label": "resolution", "values": ["720p", "1080p"], "default": "720p" },
+        { "param": "generate_audio", "label": "audio", "values": [true, false], "default": true }
+      ],
+      "defaults": {}
+    }
+  ]
+}
