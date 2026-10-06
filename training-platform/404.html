@@ -18,7 +18,25 @@
 </head>
 <body data-page="404">
 <a class="skip-link" href="#main" data-i18n="nav.skip">تخطَّ إلى المحتوى</a>
-<header id="site-header" class="site-header"></header>
+<header id="site-header" class="site-header">
+  <div class="header-bar">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="AGILIX"><picture><source media="(min-width: 1240px)" srcset="assets/img/logo-bilingual.svg"><img class="brand__logo brand__logo--full" src="assets/img/logo.svg" alt="AGILIX"></picture></a>
+      <nav class="main-nav" id="main-nav" aria-label="القائمة الرئيسية">
+        <div class="main-nav__links">
+          <a class="nav-link" href="index.html">الرئيسية</a>
+          <a class="nav-link" href="courses.html">الدورات</a>
+          <a class="nav-link" href="pricing.html">الأسعار</a>
+          <a class="nav-link" href="dashboard.html">لوحتي</a>
+          <a class="nav-link" href="contact.html">تواصل معنا</a>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <a class="btn btn--ink btn--sm hide-mobile" href="dashboard.html">تعلّمي</a>
+      </div>
+    </div>
+  </div>
+</header>
 
 <main id="main">
   <section class="page-section">
@@ -27,5 +45,16 @@
 </main>
 
 <footer id="site-footer" class="site-footer"></footer>
+<script>
+  /* Opening the files straight from disk (file://) blocks the platform's scripts and data.
+     Show a clear hint instead of a blank page. */
+  if (location.protocol === 'file:') document.addEventListener('DOMContentLoaded', function () {
+    var d = document.createElement('div');
+    d.setAttribute('role', 'alert');
+    d.style.cssText = 'position:relative;z-index:60;margin:16px auto;max-width:760px;padding:16px 20px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;font:15px/1.7 Tajawal,Poppins,sans-serif;text-align:center';
+    d.innerHTML = '<b>افتح المنصة عبر Vercel أو خادم محلي</b><br>المتصفح يمنع تشغيل الملفات مباشرةً من القرص. شغّل <code>npx serve .</code> داخل المجلد ثم افتح الرابط الظاهر.<br><span dir="ltr">Open the site through Vercel or a local server: run <code>npx serve .</code> in this folder.</span>';
+    document.body.insertBefore(d, document.querySelector('main'));
+  });
+</script>
 </body>
 </html>

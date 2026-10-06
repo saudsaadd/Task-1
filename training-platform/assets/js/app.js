@@ -6,7 +6,10 @@ import { icon } from './icons.js';
 
 export { icon };
 
-const STATE_KEY = 'academy.state.v1';
+const USERS_KEY = 'academy.users.v1';
+const SESSION_KEY = 'academy.session.v1';
+const LEGACY_STATE_KEY = 'academy.state.v1';
+const stateKey = (userId) => `academy.state.v1:${userId || 'guest'}`;
 const LANG_KEY = 'academy.lang';
 const DAY = 864e5;
 
@@ -189,7 +192,7 @@ async function seedState() {
 
 export function getState() { return state; }
 
-function saveState() { storage.set(STATE_KEY, JSON.stringify(state)); }
+function saveState() { storage.set(stateKey(session?.userId), JSON.stringify(state)); }
 
 export function update(mutator) {
   mutator(state);
@@ -198,10 +201,150 @@ export function update(mutator) {
 }
 
 export async function resetState() {
-  storage.remove(STATE_KEY);
-  state = await seedState();
+  const user = currentUser();
+  state = user?.demo ? await seedState() : { ...emptyState(), profile: { name: user?.name || '', email: user?.email || '', avatar: '' } };
   saveState();
   document.dispatchEvent(new CustomEvent('app:statechange'));
+}
+
+/* --------------------------------------------------------------- accounts
+   Front-end accounts stored in localStorage (users, session, per-user progress).
+   Passwords are salted and hashed with SHA-256 (Web Crypto); this is a demo
+   store in the visitor's own browser, not a replacement for a real backend. */
+let users = [];
+let session = null;
+
+export class AuthError extends Error {
+  constructor(code) { super(code); this.code = code; }
+}
+
+function loadUsers() { try { users = JSON.parse(storage.get(USERS_KEY)) || []; } catch { users = []; } }
+function saveUsers() { storage.set(USERS_KEY, JSON.stringify(users)); }
+const normEmail = (e) => String(e || '').trim().toLowerCase();
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : `u${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`);
+
+async function hashPassword(password, salt) {
+  const bytes = new TextEncoder().encode(`${salt}:${password}`);
+  if (globalThis.crypto?.subtle) {
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  // Non-secure contexts (plain http) have no Web Crypto: fall back to FNV-1a.
+  let h = 2166136261;
+  for (const b of bytes) { h ^= b; h = Math.imul(h, 16777619); }
+  return `fnv-${(h >>> 0).toString(16)}`;
+}
+
+export const currentUser = () => (session ? users.find((u) => u.id === session.userId) || null : null);
+export const isLoggedIn = () => !!currentUser();
+export const hasDemoAccount = () => users.some((u) => u.id === 'demo');
+export const userName = (u = currentUser()) => tx(u?.name) || '';
+
+async function loadStateFor(user) {
+  let s = null;
+  try { s = JSON.parse(storage.get(stateKey(user?.id))); } catch { s = null; }
+  if (!s || s.v !== 1) {
+    s = user?.demo ? await seedState() : emptyState();
+    if (user && !user.demo) s.profile = { name: user.name, email: user.email, avatar: '' };
+  }
+  state = { ...emptyState(), ...s };
+  saveState();
+}
+
+async function startSession(user) {
+  session = { userId: user.id, at: new Date().toISOString() };
+  storage.set(SESSION_KEY, JSON.stringify(session));
+  await loadStateFor(user);
+  document.dispatchEvent(new CustomEvent('app:authchange', { detail: { user } }));
+}
+
+async function ensureDemoUser() {
+  let student;
+  try { student = await data.student(); } catch { return; }
+  const existing = users.find((u) => u.id === 'demo');
+  if (!student.seedDemoData) {
+    if (existing) { users = users.filter((u) => u.id !== 'demo'); saveUsers(); }
+    return;
+  }
+  const email = normEmail(student.demoAccount?.email || student.profile?.email || 'demo@agilix.app');
+  const password = student.demoAccount?.password || 'agilix2026';
+  if (existing && existing.email === email && existing.hash === await hashPassword(password, existing.salt)) return;
+  const salt = newId();
+  const demo = { id: 'demo', demo: true, name: student.profile?.name || 'Demo', email, salt, hash: await hashPassword(password, salt), createdAt: new Date().toISOString() };
+  users = [...users.filter((u) => u.id !== 'demo'), demo];
+  saveUsers();
+}
+
+export async function signUp({ name, email, password }) {
+  loadUsers();
+  const e = normEmail(email);
+  if (users.some((u) => u.email === e)) throw new AuthError('exists');
+  const salt = newId();
+  const user = { id: newId(), name: String(name).trim(), email: e, salt, hash: await hashPassword(password, salt), createdAt: new Date().toISOString() };
+  users.push(user);
+  saveUsers();
+  await startSession(user);
+  return user;
+}
+
+export async function signIn({ email, password }) {
+  loadUsers();
+  const user = users.find((u) => u.email === normEmail(email));
+  if (!user) throw new AuthError('notFound');
+  if ((await hashPassword(password, user.salt)) !== user.hash) throw new AuthError('wrongPassword');
+  await startSession(user);
+  return user;
+}
+
+export async function signInDemo() {
+  loadUsers();
+  await ensureDemoUser();
+  const demo = users.find((u) => u.id === 'demo');
+  if (!demo) throw new AuthError('noDemo');
+  await startSession(demo);
+  return demo;
+}
+
+export async function signOut() {
+  session = null;
+  storage.remove(SESSION_KEY);
+  await loadStateFor(null);
+  document.dispatchEvent(new CustomEvent('app:authchange', { detail: { user: null } }));
+}
+
+/** Update the signed-in account's name / email (kept in sync with the learner profile). */
+export function updateAccount({ name, email }) {
+  const user = currentUser();
+  if (!user) return;
+  const e = normEmail(email);
+  if (e && e !== user.email && users.some((u) => u.email === e)) throw new AuthError('exists');
+  if (name) user.name = String(name).trim();
+  if (e) user.email = e;
+  saveUsers();
+  update((st) => { st.profile.name = user.name; st.profile.email = user.email; });
+}
+
+/** Opens the sign-in / sign-up modal (loaded on demand). */
+export async function openAuth(options = {}) {
+  const m = await import('./auth.js');
+  m.openAuthModal(options);
+}
+
+/** Returns true when signed in; otherwise opens the auth modal and returns false. */
+export function requireAuth({ next = location.href, tab = 'signin', reason = '' } = {}) {
+  if (isLoggedIn()) return true;
+  openAuth({ next, tab, reason });
+  return false;
+}
+
+/** Navigate with a short fade so redirects feel smooth. */
+let leaving = false;
+addEventListener('pagehide', () => { leaving = true; });
+
+export function navigate(url) {
+  leaving = true; // requests cut off by the redirect are not errors
+  document.documentElement.classList.add('is-leaving');
+  setTimeout(() => location.assign(url), 220);
 }
 
 export const enrollment = (courseId) => state.enrollments[courseId] || null;
@@ -272,7 +415,7 @@ export function certificateId(course) {
 }
 
 export function learnerName() {
-  return tx(state.profile.name) || t('common.learner');
+  return tx(state.profile.name) || userName() || t('common.learner');
 }
 
 export function initials(name) {
@@ -429,20 +572,31 @@ function currentFile() {
   return f && f.includes('.') ? f : 'index.html';
 }
 
+// Inner pages highlight their parent section in the main navigation.
+const NAV_PARENT = { 'course.html': 'courses.html', 'quiz.html': 'courses.html', 'checkout.html': 'pricing.html', 'certificate.html': 'dashboard.html' };
+
 function isActive(href) {
   const file = String(href).split(/[?#]/)[0] || 'index.html';
-  return file === currentFile();
+  const current = currentFile();
+  return file === (NAV_PARENT[current] || current);
 }
 
 /** Header/footer logo: the full wordmark when headerShowsName is false, else mark + name. */
-function brandMarkup(cls = '', onDark = false) {
+function brandMarkup(cls = '', onDark = false, alwaysBilingual = false) {
   const b = app.site.brand;
   const showName = b.headerShowsName !== false;
-  const full = onDark ? b.logoOnDark || b.logo : b.logo;
-  const src = safeUrl(showName ? b.logoMark || full : full || b.logoMark);
-  return `<a class="brand ${cls}" href="index.html" aria-label="${esc(tx(b.name))}">
-    ${src ? `<img class="brand__logo${showName ? '' : ' brand__logo--full'}" src="${esc(src)}" alt="${showName ? '' : esc(tx(b.name))}"${showName ? ' width="36" height="36"' : ''}>` : ''}
-    ${showName ? `<span class="brand__name">${esc(tx(b.name))}</span>` : ''}
+  const full = safeUrl(onDark ? b.logoOnDark || b.logo : b.logo);
+  const bilingual = safeUrl(onDark ? b.logoBilingualOnDark || b.logoBilingual : b.logoBilingual);
+  const name = esc(tx(b.name));
+  if (showName) {
+    const mark = safeUrl(b.logoMark || full);
+    return `<a class="brand ${cls}" href="index.html" aria-label="${name}">
+      ${mark ? `<img class="brand__logo" src="${esc(mark)}" alt="" width="36" height="36">` : ''}<span class="brand__name">${name}</span></a>`;
+  }
+  // AGILIX wordmark, with the Arabic wordmark beside it where there is room.
+  const img = `<img class="brand__logo brand__logo--full" src="${esc(alwaysBilingual && bilingual ? bilingual : full || bilingual)}" alt="${name}">`;
+  return `<a class="brand ${cls}" href="index.html" aria-label="${name}">
+    ${bilingual && !alwaysBilingual ? `<picture><source media="(min-width: 1240px)" srcset="${esc(bilingual)}">${img}</picture>` : img}
   </a>`;
 }
 
@@ -452,6 +606,44 @@ function langButton(cls = '') {
   return `<button type="button" class="lang-switch ${cls}" data-lang-toggle lang="${otherLang()}" aria-label="${esc(t('lang.aria'))}">
     ${icon('globe')}<span>${esc(t('lang.switchTo'))}</span>
   </button>`;
+}
+
+function accountMarkup() {
+  const user = currentUser();
+  if (!user) {
+    return `<button type="button" class="btn btn--ghost btn--sm hide-mobile hide-narrow" data-auth="signin">${icon('login', 'flip-rtl')}${esc(t('nav.signin'))}</button>
+      <button type="button" class="btn btn--ink btn--sm hide-mobile" data-auth="signin" data-next="dashboard.html">${esc(t('nav.start'))}${icon('arrow', 'flip-rtl')}</button>`;
+  }
+  const name = userName(user);
+  return `<a class="btn btn--ink btn--sm hide-mobile hide-narrow" href="dashboard.html">${esc(t('nav.start'))}${icon('arrow', 'flip-rtl')}</a>
+    <div class="account">
+      <button type="button" class="account__toggle" aria-expanded="false" aria-controls="account-menu" aria-label="${esc(t('auth.account'))}: ${esc(name)}">
+        ${avatar(name, '', 'avatar--sm')}<span class="account__name hide-mobile">${esc(name.split(' ')[0])}</span>${icon('chevronDown', 'hide-mobile')}
+      </button>
+      <div class="account__menu" id="account-menu" hidden>
+        <div class="account__head">${avatar(name, '', '')}<div><b>${esc(name)}</b><span class="ltr">${esc(user.email)}</span></div></div>
+        <a href="dashboard.html">${icon('grid')}${esc(t('auth.myDashboard'))}</a>
+        <a href="dashboard.html#results">${icon('target')}${esc(t('dash.results'))}</a>
+        <a href="certificate.html">${icon('award')}${esc(t('auth.myCertificates'))}</a>
+        <button type="button" data-signout>${icon('logout', 'flip-rtl')}${esc(t('auth.signout'))}</button>
+      </div>
+    </div>`;
+}
+
+function mobileAccountMarkup() {
+  const user = currentUser();
+  if (!user) {
+    return `<div class="mobile-auth">
+      <button type="button" class="btn btn--primary btn--block" data-auth="signin" data-next="dashboard.html">${icon('login', 'flip-rtl')}${esc(t('nav.signin'))}</button>
+      <button type="button" class="btn btn--ghost btn--block" data-auth="signup" data-next="dashboard.html">${icon('userPlus')}${esc(t('auth.signup'))}</button>
+    </div>`;
+  }
+  const name = userName(user);
+  return `<div class="mobile-auth">
+    <div class="account__head">${avatar(name, '', '')}<div><b>${esc(name)}</b><span class="ltr">${esc(user.email)}</span></div></div>
+    <a class="btn btn--ink btn--block" href="dashboard.html">${esc(t('auth.myDashboard'))}</a>
+    <button type="button" class="btn btn--ghost btn--block" data-signout>${icon('logout', 'flip-rtl')}${esc(t('auth.signout'))}</button>
+  </div>`;
 }
 
 async function renderHeader() {
@@ -470,7 +662,7 @@ async function renderHeader() {
         ${brandMarkup()}
         <nav class="main-nav" id="main-nav" aria-label="${esc(t('nav.main'))}">
           <div class="main-nav__links">${links}</div>
-          <div class="main-nav__extra">${langButton('lang-switch--block')}</div>
+          <div class="main-nav__extra">${mobileAccountMarkup()}${langButton('lang-switch--block')}</div>
         </nav>
         <div class="header-actions">
           ${langButton('hide-mobile')}
@@ -480,7 +672,7 @@ async function renderHeader() {
             </button>
             <div class="notif__panel" id="notif-panel" hidden></div>
           </div>
-          <a class="btn btn--ink btn--sm hide-mobile" href="dashboard.html">${esc(t('nav.start'))}${icon('arrow', 'flip-rtl')}</a>
+          ${accountMarkup()}
           <button type="button" class="icon-btn menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="${esc(t('nav.menu'))}">${icon('menu')}</button>
         </div>
       </div>
@@ -587,7 +779,7 @@ function renderFooter() {
   el.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        ${brandMarkup('brand--footer', true)}
+        ${brandMarkup('brand--footer', true, true)}
         <p class="muted">${esc(tx(brand.description))}</p>
         <div class="social">${(social || []).map((s) => `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener" class="chip chip--outline">${esc(s.name)}</a>`).join('')}</div>
       </div>
@@ -678,9 +870,38 @@ function setupGlobalHandlers() {
   // Keep the bell badge and banner in sync with read/dismissed state.
   document.addEventListener('app:statechange', () => renderHeader());
 
+  document.addEventListener('app:authchange', () => renderChrome());
+
   document.addEventListener('click', (e) => {
     const langBtn = e.target.closest('[data-lang-toggle]');
     if (langBtn) { e.preventDefault(); setLang(otherLang()); return; }
+    const authBtn = e.target.closest('[data-auth]');
+    if (authBtn) {
+      e.preventDefault();
+      closeMobileMenu();
+      openAuth({ tab: authBtn.dataset.auth, next: authBtn.dataset.next || '' });
+      return;
+    }
+    const outBtn = e.target.closest('[data-signout]');
+    if (outBtn) {
+      e.preventDefault();
+      signOut().then(() => {
+        toast(t('auth.signedOut'), 'info');
+        if (['dashboard'].includes(document.body.dataset.page)) navigate('index.html');
+      });
+      return;
+    }
+    const accToggle = e.target.closest('.account__toggle');
+    const menu = $('#account-menu');
+    if (accToggle && menu) {
+      menu.hidden = !menu.hidden;
+      accToggle.setAttribute('aria-expanded', String(!menu.hidden));
+      return;
+    }
+    if (menu && !menu.hidden && !e.target.closest('#account-menu')) {
+      menu.hidden = true;
+      $('.account__toggle')?.setAttribute('aria-expanded', 'false');
+    }
     const chatLink = e.target.closest('a[href="#chat"]');
     if (chatLink) { e.preventDefault(); document.dispatchEvent(new CustomEvent('app:openchat')); }
   });
@@ -697,7 +918,14 @@ function setupGlobalHandlers() {
   }
 }
 
+function closeMobileMenu() {
+  const header = document.getElementById('site-header');
+  header?.classList.remove('is-menu-open');
+  document.body.classList.remove('no-scroll');
+}
+
 function showFatal(err) {
+  if (leaving) return;
   console.error('[academy]', err);
   const main = $('main') || document.body;
   const fileProtocol = location.protocol === 'file:';
@@ -713,9 +941,12 @@ async function init() {
   app.site = await data.site();
   applyTheme(app.site.theme);
   await applyLang(pickLang());
-  try { state = JSON.parse(storage.get(STATE_KEY)); } catch { state = null; }
-  if (!state || state.v !== 1) { state = await seedState(); saveState(); }
-  state = { ...emptyState(), ...state };
+  storage.remove(LEGACY_STATE_KEY);
+  loadUsers();
+  await ensureDemoUser();
+  try { session = JSON.parse(storage.get(SESSION_KEY)); } catch { session = null; }
+  if (session && !currentUser()) { session = null; storage.remove(SESSION_KEY); }
+  await loadStateFor(currentUser());
   renderChrome();
   setupGlobalHandlers();
   document.dispatchEvent(new CustomEvent('app:ready', { detail: { lang: app.lang } }));
@@ -735,6 +966,7 @@ async function run(fn) {
 }
 
 function showPageError(err) {
+  if (leaving) return;
   console.error('[academy]', err);
   toast(t('common.error'), 'error');
 }
@@ -746,3 +978,4 @@ export function boot(render) {
 }
 
 document.addEventListener('app:langchange', () => renderers.forEach(run));
+document.addEventListener('app:authchange', () => ready.then(() => renderers.forEach(run)));

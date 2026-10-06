@@ -3,7 +3,7 @@
 import {
   boot, data, t, tx, esc, icon, safeUrl, fmtNum, fmtDate, fmtPrice, fmtMinutes, fmtCompact, courseCover, levelLabel,
   enrollment, enroll, canAccess, hasPlanAccess, completeLesson, setLastLesson, progress, bestAttempt, isComplete,
-  liveStatus, stars, avatar, toast, setTitle, param, $, $$
+  liveStatus, stars, avatar, toast, setTitle, param, requireAuth, $, $$
 } from '../app.js';
 import { reviewCard } from '../ui.js';
 
@@ -99,7 +99,7 @@ function drawPlayer() {
 
   if (lesson.type === 'video') {
     host.innerHTML = `<div class="player">${mediaMarkup(lesson.videoUrl, title) || overlay('video', t('course.videoMissing'), t('course.videoMissingText'))}</div>`;
-    $('video', host)?.addEventListener('ended', () => markDone(lesson));
+    $('video', host)?.addEventListener('ended', () => markDone(lesson, false));
     return;
   }
 
@@ -158,8 +158,9 @@ function renderLessonBar() {
   $('[data-complete]', $('#lesson-bar'))?.addEventListener('click', () => markDone(lesson));
 }
 
-function markDone(lesson) {
+function markDone(lesson, fromUser = true) {
   if (!lessonOpen(lesson)) return;
+  if (!requireAuth({ reason: t('auth.reason.progress') })) { if (!fromUser) toast(t('auth.reason.progress'), 'info'); return; }
   const wasNew = completeLesson(course, lesson);
   if (!wasNew) return;
   toast(t('toast.lessonDone'));
@@ -237,6 +238,7 @@ function renderEnrollBox() {
       </ul>
     </div>`;
   $('[data-enroll]', $('#enroll'))?.addEventListener('click', () => {
+    if (!requireAuth({ reason: t('auth.reason.enroll') })) return;
     enroll(course.id);
     toast(t('toast.enrolled'));
     renderEnrollBox(); renderCurriculum(); renderLessonBar(); renderPlayer();

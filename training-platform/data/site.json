@@ -2,17 +2,21 @@
   "_help": "Main settings file. Every text is { \"ar\": ..., \"en\": ... }. Edit values only; keep the keys. See README.md.",
 
   "brand": {
-    "name": { "ar": "أجيليكس", "en": "Agilix" },
-    "shortName": { "ar": "أجيليكس", "en": "AGILIX" },
+    "_nameNote": "The platform name stays AGILIX (Latin) in every language. The Arabic wordmark only accompanies it in the logo lockup.",
+    "name": { "ar": "AGILIX", "en": "AGILIX" },
+    "shortName": { "ar": "AGILIX", "en": "AGILIX" },
     "tagline": { "ar": "تعلّم بمرونة، وتقدّم أسرع", "en": "Learn agile. Grow faster." },
     "logo": "assets/img/logo.svg",
     "logoOnDark": "assets/img/logo-white.svg",
+    "logoBilingual": "assets/img/logo-bilingual.svg",
+    "logoBilingualOnDark": "assets/img/logo-bilingual-white.svg",
+    "logoArabic": "assets/img/logo-ar.svg",
     "logoMark": "assets/img/logo-mark.svg",
     "favicon": "assets/img/favicon.svg",
     "headerShowsName": false,
     "description": {
-      "ar": "أجيليكس منصة تدريب احترافية: بث مباشر، ودروس مرئية، واختبارات تفاعلية، وشهادات إتمام، ومساعد ذكي يرافقك في كل خطوة.",
-      "en": "Agilix is a professional training platform: live sessions, video lessons, interactive quizzes, completion certificates and an AI assistant at every step."
+      "ar": "AGILIX منصة تدريب احترافية: بث مباشر، ودروس مرئية، واختبارات تفاعلية، وشهادات إتمام، ومساعد ذكي يرافقك في كل خطوة.",
+      "en": "AGILIX is a professional training platform: live sessions, video lessons, interactive quizzes, completion certificates and an AI assistant at every step."
     }
   },
 
@@ -29,7 +33,7 @@
 
   "hero": {
     "model": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb",
-    "headline": { "ar": "أجيليكس", "en": "Agilix" },
+    "headline": { "ar": "AGILIX", "en": "AGILIX" },
     "eyebrow": { "ar": "تعلّم بمرونة، وتقدّم أسرع", "en": "Learn agile. Grow faster." },
     "tagline": {
       "ar": "منصة تدريب احترافية تجمع الجلسات المباشرة، والمسارات المرئية، والاختبارات الذكية، والشهادات المعتمدة في مكان واحد.",
@@ -87,7 +91,7 @@
   "assistant": {
     "enabled": true,
     "endpoint": "/api/chat",
-    "name": { "ar": "مساعد أجيليكس", "en": "Agilix Assistant" },
+    "name": { "ar": "مساعد AGILIX", "en": "AGILIX Assistant" },
     "welcome": {
       "ar": "مرحبًا! أنا المساعد الذكي للمنصة. اسألني عن الدورات، الاختبارات، الشهادات أو الاشتراكات.",
       "en": "Hi! I'm the platform's AI assistant. Ask me about courses, quizzes, certificates or plans."
@@ -116,7 +120,7 @@
   },
 
   "certificate": {
-    "issuer": { "ar": "منصة أجيليكس للتدريب", "en": "Agilix Training" },
+    "issuer": { "ar": "منصة AGILIX للتدريب", "en": "AGILIX Training" },
     "idPrefix": "AGX",
     "signatory": { "name": { "ar": "د. خالد العتيبي", "en": "Dr. Khalid Alotaibi" }, "title": { "ar": "مدير البرامج التدريبية", "en": "Director of Training Programs" } },
     "verifyUrl": "certificate.html"

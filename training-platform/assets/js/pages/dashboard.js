@@ -3,7 +3,7 @@
 import {
   app, boot, data, t, tx, esc, icon, fmtNum, fmtDate, fmtMinutes, safeUrl, getState, update, resetState,
   enrollment, progress, isComplete, bestAttempt, upcomingLive, learnerName, avatar, courseCover,
-  openModal, confirmDialog, toast, dayKey, setTitle, $, $$
+  openModal, confirmDialog, toast, dayKey, setTitle, isLoggedIn, currentUser, updateAccount, openAuth, $, $$
 } from '../app.js';
 
 const DAY = 864e5;
@@ -102,7 +102,12 @@ function editProfile() {
         onClick: (d) => {
           const name = $('#pf-name', d).value.trim();
           const email = $('#pf-email', d).value.trim();
-          update((st) => { if (name) st.profile.name = name; st.profile.email = email; });
+          try {
+            updateAccount({ name, email });
+          } catch (err) {
+            toast(err?.code === 'exists' ? t('auth.err.exists') : t('common.error'), 'error');
+            return;
+          }
           toast(t('toast.saved'));
           render();
         }
@@ -112,8 +117,28 @@ function editProfile() {
   setTimeout(() => $('#pf-name', dlg)?.focus(), 30);
 }
 
+function renderGate() {
+  $('#dash-head').innerHTML = '';
+  $('#dash-root').innerHTML = `<div class="card auth-gate">
+    <span class="success-panel__icon">${icon('lock')}</span>
+    <h1 class="h2">${esc(t('auth.gate.title'))}</h1>
+    <p class="lead" style="text-align:center">${esc(t('auth.gate.text'))}</p>
+    <div class="row" style="justify-content:center">
+      <button type="button" class="btn btn--primary btn--lg" data-auth="signin" data-next="dashboard.html">${icon('login', 'flip-rtl')}${esc(t('auth.signin'))}</button>
+      <button type="button" class="btn btn--ghost btn--lg" data-auth="signup" data-next="dashboard.html">${icon('userPlus')}${esc(t('auth.signup'))}</button>
+    </div>
+  </div>`;
+}
+
+let gateOpened = false;
+
 async function render() {
   setTitle(t('nav.dashboard'));
+  if (!isLoggedIn()) {
+    renderGate();
+    if (!gateOpened) { gateOpened = true; openAuth({ next: 'dashboard.html', reason: t('auth.reason.dashboard') }); }
+    return;
+  }
   const [catalog, quizzes, ann, plans] = await Promise.all([data.courses(), data.quizzes(), data.announcements().catch(() => ({ items: [] })), data.plans()]);
   const state = getState();
   const courses = catalog.courses;

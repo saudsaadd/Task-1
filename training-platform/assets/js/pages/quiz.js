@@ -4,7 +4,7 @@
 // configurable grading scale. Results are saved to the learner's dashboard.
 import {
   app, boot, data, t, tx, esc, icon, fmtNum, fmtDate, fmtClock, canAccess, attemptsFor, bestAttempt,
-  addAttempt, isComplete, gradeFor, confirmDialog, toast, setTitle, param, $, $$
+  addAttempt, isComplete, gradeFor, confirmDialog, toast, setTitle, param, requireAuth, $, $$
 } from '../app.js';
 
 let quiz, scale, course, questions, answers, flags, checked, index, startedAt, timerId, phase;
@@ -134,6 +134,7 @@ function renderIntro(root) {
 }
 
 function start() {
+  if (!requireAuth({ reason: t('auth.reason.quiz') })) return;
   questions = prepare();
   answers = {}; flags = new Set(); checked = {}; index = 0;
   startedAt = Date.now();

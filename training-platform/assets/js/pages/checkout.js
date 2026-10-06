@@ -3,8 +3,8 @@
 // secure payment page (Stripe Payment Links, Moyasar, Tap, PayPal…). Without one
 // the page runs in demo mode: no card data is collected and nothing is charged.
 import {
-  app, boot, data, t, tx, esc, icon, fmtPrice, fmtNum, fmtDate, safeUrl, courseCover, getState, update, enroll,
-  toast, setTitle, param, $, $$
+  app, boot, data, t, tx, esc, icon, fmtPrice, fmtNum, fmtDate, safeUrl, courseCover, update, enroll,
+  toast, setTitle, param, requireAuth, currentUser, userName, $, $$
 } from '../app.js';
 
 const METHOD_ICONS = { card: 'card', applepay: 'apple', stcpay: 'wallet', paypal: 'paypal' };
@@ -136,7 +136,7 @@ async function render() {
     return;
   }
 
-  const state = getState();
+  const user = currentUser();
   const demo = !safeUrl(item.link) && item.price > 0;
   const free = !item.price;
   const dn = (() => { try { return new Intl.DisplayNames([app.lang], { type: 'region' }); } catch { return null; } })();
@@ -152,8 +152,8 @@ async function render() {
           <h2 class="step-title"><span>1</span>${esc(t('checkout.account'))}</h2>
           <div class="form">
             <div class="form-row">
-              <div class="field"><label for="co-name">${esc(t('checkout.name'))}</label><input class="input" id="co-name" autocomplete="name" data-required value="${esc(state.demo ? '' : tx(state.profile.name))}"><span class="field__error"></span></div>
-              <div class="field"><label for="co-email">${esc(t('checkout.email'))}</label><input class="input ltr" id="co-email" type="email" autocomplete="email" data-required value="${esc(state.demo ? '' : state.profile.email)}"><span class="field__error"></span></div>
+              <div class="field"><label for="co-name">${esc(t('checkout.name'))}</label><input class="input" id="co-name" autocomplete="name" data-required value="${esc(user ? userName(user) : '')}"><span class="field__error"></span></div>
+              <div class="field"><label for="co-email">${esc(t('checkout.email'))}</label><input class="input ltr" id="co-email" type="email" autocomplete="email" data-required value="${esc(user?.email || '')}"><span class="field__error"></span></div>
             </div>
             <div class="form-row">
               <div class="field"><label for="co-phone">${esc(t('checkout.phone'))} <span class="muted">(${esc(t('common.optional'))})</span></label><input class="input ltr" id="co-phone" type="tel" autocomplete="tel" placeholder="+966 5x xxx xxxx"></div>
@@ -197,6 +197,7 @@ async function render() {
     e.preventDefault();
     const form = e.currentTarget;
     if (!validate(form)) return;
+    if (!requireAuth({ reason: t('auth.reason.checkout'), tab: 'signup' })) return;
     const buyer = { name: $('#co-name').value.trim(), email: $('#co-email').value.trim() };
     const btn = $('[data-pay]');
     btn.disabled = true;

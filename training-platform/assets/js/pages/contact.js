@@ -1,6 +1,6 @@
 // Contact & support: contact form (Formspree-style endpoint or mailto fallback),
 // support channels, free-trial request and a searchable FAQ.
-import { app, boot, data, t, tx, esc, icon, toast, getState, setTitle, $, $$ } from '../app.js';
+import { app, boot, data, t, tx, esc, icon, toast, setTitle, currentUser, userName, $, $$ } from '../app.js';
 import { faqAccordion } from '../ui.js';
 
 let faqCat = 'all';
@@ -57,7 +57,6 @@ async function render() {
   setTitle(t('nav.contact'));
   const faq = await data.faq();
   const c = app.site.contact;
-  const state = getState();
   const topic = new URLSearchParams(location.search).get('topic') || 'general';
 
   $('#contact-head').innerHTML = `<div class="section-head" style="margin-bottom:0">
@@ -71,8 +70,8 @@ async function render() {
     <form class="card form" id="contact-form" novalidate>
       <div class="stack" style="gap:6px"><h2 class="h3">${esc(t('contact.form.title'))}</h2><p class="muted">${esc(tx(c.responseTime))}</p></div>
       <div class="form-row">
-        <div class="field"><label for="ct-name">${esc(t('contact.name'))}</label><input class="input" id="ct-name" autocomplete="name" data-required value="${esc(state.demo ? '' : tx(state.profile.name))}"><span class="field__error"></span></div>
-        <div class="field"><label for="ct-email">${esc(t('contact.email'))}</label><input class="input ltr" id="ct-email" type="email" autocomplete="email" data-required value="${esc(state.demo ? '' : state.profile.email)}"><span class="field__error"></span></div>
+        <div class="field"><label for="ct-name">${esc(t('contact.name'))}</label><input class="input" id="ct-name" autocomplete="name" data-required value="${esc(currentUser() ? userName() : '')}"><span class="field__error"></span></div>
+        <div class="field"><label for="ct-email">${esc(t('contact.email'))}</label><input class="input ltr" id="ct-email" type="email" autocomplete="email" data-required value="${esc(currentUser()?.email || '')}"><span class="field__error"></span></div>
       </div>
       <div class="form-row">
         <div class="field"><label for="ct-phone">${esc(t('contact.phone'))} <span class="muted">(${esc(t('common.optional'))})</span></label><input class="input ltr" id="ct-phone" type="tel" autocomplete="tel"></div>

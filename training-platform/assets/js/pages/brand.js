@@ -23,6 +23,7 @@ function render() {
   setTitle(t('brand.title'));
   const b = app.site.brand;
   const logo = b.logo, logoDark = b.logoOnDark || b.logo, mark = b.logoMark;
+  const lockup = b.logoBilingual || logo, lockupDark = b.logoBilingualOnDark || logoDark, arabic = b.logoArabic;
 
   $('#brand-head').innerHTML = `<div class="section-head" style="margin-bottom:0;max-width:820px">
     <div class="stack" style="gap:14px">
@@ -31,10 +32,27 @@ function render() {
       <p class="lead">${esc(t('brand.intro'))}</p>
     </div>
     <div class="row">
-      <a class="btn btn--primary" href="${esc(logo)}" download>${icon('download')}${esc(t('brand.download.logo'))}</a>
+      <a class="btn btn--primary" href="${esc(lockup)}" download>${icon('download')}${esc(t('brand.download.bilingual'))}</a>
+      <a class="btn btn--ghost" href="${esc(logo)}" download>${icon('download')}${esc(t('brand.download.logo'))}</a>
       <a class="btn btn--ghost" href="${esc(mark)}" download>${icon('download')}${esc(t('brand.download.mark'))}</a>
       <a class="btn btn--ghost" href="${esc(logoDark)}" download>${icon('download')}${esc(t('brand.download.dark'))}</a>
     </div>
+  </div>`;
+
+  const lockups = `<div class="grid grid--2">
+    <figure class="card" style="margin:0;display:grid;place-items:center;min-height:220px;gap:18px">
+      <img src="${esc(lockup)}" alt="AGILIX" style="height:64px;width:auto;max-width:100%">
+      <figcaption class="muted" style="font-size:13px">${esc(t('brand.logo.bilingual'))}</figcaption>
+    </figure>
+    <figure class="card on-dark" style="margin:0;display:grid;place-items:center;min-height:220px;gap:18px;background:var(--ink);border-color:var(--ink)">
+      <img src="${esc(lockupDark)}" alt="AGILIX" style="height:64px;width:auto;max-width:100%">
+      <figcaption class="muted" style="font-size:13px">${esc(t('brand.logo.bilingualDark'))}</figcaption>
+    </figure>
+  </div>
+  <div class="card row" style="gap:24px;align-items:center">
+    <span style="font:800 40px/1 Poppins,sans-serif;letter-spacing:-.03em">AGILIX</span>
+    ${arabic ? `<img src="${esc(arabic)}" alt="" style="height:44px;width:auto">` : ''}
+    <p class="muted" style="flex:1;min-width:240px">${esc(t('brand.name.rule'))}</p>
   </div>`;
 
   const logos = `<div class="grid grid--3">
@@ -119,7 +137,7 @@ function render() {
   </div>`;
 
   $('#brand-root').innerHTML = [
-    section(t('brand.s.logo'), t('brand.s.logoTitle'), logos),
+    section(t('brand.s.logo'), t('brand.s.logoTitle'), `${lockups}${logos}`),
     section(t('brand.s.concept'), t('brand.s.conceptTitle'), concept),
     section(t('brand.s.color'), t('brand.s.colorTitle'), palette, t('brand.s.colorText')),
     section(t('brand.s.type'), t('brand.s.typeTitle'), type),

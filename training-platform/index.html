@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>أجيليكس · Agilix — تعلّم بمرونة</title>
+<title>AGILIX — تعلّم بمرونة، وتقدّم أسرع</title>
 <meta name="description" content="منصة تدريب احترافية: بث مباشر، دروس مرئية، اختبارات تفاعلية، شهادات إتمام، ومساعد ذكي.">
 <meta name="theme-color" content="#F6F7FB">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Agilix · أجيليكس — Learn agile. Grow faster.">
+<meta property="og:title" content="AGILIX — Learn agile. Grow faster.">
 <meta property="og:description" content="Live sessions, video lessons, smart quizzes, certificates and an AI assistant.">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,6 +75,7 @@
     display: grid; place-items: center; transform: rotate(-8deg);
   }
   .hero__fallback-cube img { width: 50%; height: 50%; transform: rotate(8deg); }
+  .hero__fallback-ar { position: absolute; top: 66%; inset-inline-end: 8vw; height: clamp(28px, 4vw, 56px); width: auto; }
 
   /* UI layer */
   .hero__ui {
@@ -239,7 +240,25 @@
 </head>
 <body data-page="home">
 <a class="skip-link" href="#main" data-i18n="nav.skip">تخطَّ إلى المحتوى</a>
-<header id="site-header" class="site-header"></header>
+<header id="site-header" class="site-header">
+  <div class="header-bar">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="AGILIX"><picture><source media="(min-width: 1240px)" srcset="assets/img/logo-bilingual.svg"><img class="brand__logo brand__logo--full" src="assets/img/logo.svg" alt="AGILIX"></picture></a>
+      <nav class="main-nav" id="main-nav" aria-label="القائمة الرئيسية">
+        <div class="main-nav__links">
+          <a class="nav-link is-active" href="index.html" aria-current="page">الرئيسية</a>
+          <a class="nav-link" href="courses.html">الدورات</a>
+          <a class="nav-link" href="pricing.html">الأسعار</a>
+          <a class="nav-link" href="dashboard.html">لوحتي</a>
+          <a class="nav-link" href="contact.html">تواصل معنا</a>
+        </div>
+      </nav>
+      <div class="header-actions">
+        <a class="btn btn--ink btn--sm hide-mobile" href="dashboard.html">تعلّمي</a>
+      </div>
+    </div>
+  </div>
+</header>
 
 <main id="main">
   <!-- ============================== HERO ============================== -->
@@ -247,6 +266,7 @@
     <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
     <div class="hero__fallback" aria-hidden="true">
       <span class="hero__fallback-text" data-hero="headline"></span>
+      <img class="hero__fallback-ar" data-hero="arlogo" alt="">
       <span class="hero__fallback-cube"><img data-hero="logo" alt=""></span>
     </div>
     <div class="hero__vignette" aria-hidden="true"></div>
@@ -322,11 +342,11 @@ const MODEL_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIX
 const DEFAULT_LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512"><defs><linearGradient id="agx-tile" x1="4" y1="60" x2="60" y2="4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2E5BFF"/><stop offset="1" stop-color="#14B8C4"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#agx-tile)"/><path d="M16.5 37.5 32 16l15.5 21.5" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.5 49 32 35.5 41.5 49" fill="none" stroke="#FF6B3D" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 
 let config = {
-  brand: { name: { ar: 'أجيليكس', en: 'Agilix' }, shortName: { ar: 'أجيليكس', en: 'AGILIX' }, logoMark: DEFAULT_LOGO },
+  brand: { name: { ar: 'AGILIX', en: 'AGILIX' }, shortName: { ar: 'AGILIX', en: 'AGILIX' }, logoMark: DEFAULT_LOGO, logoArabic: '' },
   theme: { primary: '#2E5BFF', secondary: '#14B8C4', highlight: '#FF6B3D', ink: '#0E1630', background: '#F6F7FB' },
   hero: {
     model: MODEL_URL,
-    headline: { ar: 'أجيليكس', en: 'Agilix' },
+    headline: { ar: 'AGILIX', en: 'AGILIX' },
     eyebrow: { ar: 'تعلّم بمرونة، وتقدّم أسرع', en: 'Learn agile. Grow faster.' },
     tagline: { ar: 'تعلّم بالممارسة: جلسات مباشرة، مسارات مرئية، اختبارات ذكية وشهادات معتمدة.', en: 'Learn by doing: live sessions, video tracks, smart quizzes and certified results.' },
     primaryCta: { label: { ar: 'استكشف الدورات', en: 'Explore courses' }, href: 'courses.html' },
@@ -368,6 +388,8 @@ function renderCopy() {
   q('hint').textContent = pick(h.dragHint);
   q('scroll').textContent = lang() === 'ar' ? 'مرّر' : 'Scroll';
   q('logo').src = config.brand.logoMark || DEFAULT_LOGO;
+  const arLogo = q('arlogo');
+  if (config.brand.logoArabic) arLogo.src = config.brand.logoArabic; else arLogo.hidden = true;
   const c1 = q('cta1'), c2 = q('cta2');
   c1.href = fit(h.primaryCta?.href); c1.firstElementChild.textContent = pick(h.primaryCta?.label);
   c2.href = fit(h.secondaryCta?.href); c2.lastElementChild.textContent = pick(h.secondaryCta?.label);
@@ -714,13 +736,22 @@ function initScene() {
 
   /* ---------- sizing */
   let W = 1, H = 1, dpr = 1, baseScale = 1, shift = 0, visH = 1;
+  // Arabic wordmark shown under the AGILIX headline (part of the bilingual lockup).
+  let arWordmark = null;
+  if (config.brand.logoArabic) {
+    const img = new Image();
+    img.onload = () => { arWordmark = img; drawText(); };
+    img.src = config.brand.logoArabic;
+  }
+
   function drawText() {
     const cw = Math.max(2, Math.round(W * dpr)), ch = Math.max(2, Math.round(H * dpr));
     textCanvas.width = cw; textCanvas.height = ch;
-    const ar = lang() === 'ar';
     const raw = String(pick(config.hero.headline) || '').trim();
-    const text = ar ? raw : raw.toUpperCase();
-    const family = ar ? '"Tajawal", "Poppins", sans-serif' : '"Poppins", "Tajawal", sans-serif';
+    // The brand name is Latin (AGILIX) in every language; only Arabic text uses the Arabic face.
+    const arabicText = /[؀-ۿ]/.test(raw);
+    const text = arabicText ? raw : raw.toUpperCase();
+    const family = arabicText ? '"Tajawal", "Poppins", sans-serif' : '"Poppins", sans-serif';
     const words = text.split(/\s+/).filter(Boolean);
     const portrait = cw / ch < 1.05;
     let lines = [text];
@@ -729,27 +760,31 @@ function initScene() {
       lines = [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
     }
     tctx.clearRect(0, 0, cw, ch);
-    tctx.direction = ar ? 'rtl' : 'ltr';
+    tctx.direction = arabicText ? 'rtl' : 'ltr';
     tctx.textAlign = 'center';
     tctx.textBaseline = 'alphabetic';
     const setFont = (px) => {
       tctx.font = `800 ${px}px ${family}`;
-      if ('letterSpacing' in tctx) tctx.letterSpacing = ar ? '0px' : `${-0.045 * px}px`;
+      if ('letterSpacing' in tctx) tctx.letterSpacing = arabicText ? '0px' : `${-0.045 * px}px`;
     };
     setFont(100);
     const widest = Math.max(...lines.map((l) => tctx.measureText(l).width), 1);
     const widthFrac = portrait ? 0.9 : W >= 1000 ? 0.7 : 0.86;
     let size = (100 * cw * widthFrac) / widest;
-    size = Math.min(size, ch * (lines.length > 1 ? 0.24 : 0.4));
+    size = Math.min(size, ch * (lines.length > 1 ? 0.24 : 0.34));
     setFont(size);
     const metrics = lines.map((l) => tctx.measureText(l));
     const asc = Math.max(...metrics.map((m) => m.actualBoundingBoxAscent || size * 0.72));
     const desc = Math.max(...metrics.map((m) => m.actualBoundingBoxDescent || size * 0.05));
-    const lineH = (asc + desc) * (ar ? 1.12 : 1.04);
-    const blockH = lineH * (lines.length - 1) + asc + desc;
+    const lineH = (asc + desc) * (arabicText ? 1.12 : 1.04);
+    const headH = lineH * (lines.length - 1) + asc + desc;
+    const arH = arWordmark ? size * 0.17 : 0;
+    const arW = arWordmark ? arH * (arWordmark.naturalWidth / Math.max(1, arWordmark.naturalHeight)) : 0;
+    const arGap = arWordmark ? size * 0.1 : 0;
+    const blockH = headH + arGap + arH;
     const top = ch / 2 - blockH / 2 - ch * shift;
-    const textW = (widest * size) / 100;
-    const left = Math.max(Math.round(16 * dpr), cw / 2 - textW / 2), right = Math.min(cw - Math.round(16 * dpr), cw / 2 + textW / 2);
+    const halfW = Math.max(...metrics.map((m) => Math.max(m.actualBoundingBoxRight || 0, m.actualBoundingBoxLeft || 0, m.width / 2)));
+    const left = Math.max(Math.round(16 * dpr), cw / 2 - halfW), right = Math.min(cw - Math.round(16 * dpr), cw / 2 + halfW);
 
     // Hairline guides and micro labels — subtle structure for the glass to bend.
     tctx.save();
@@ -768,16 +803,16 @@ function initScene() {
     tctx.fillText('TRAIN · TEST · CERTIFY', right, gy1 - 10 * dpr);
     tctx.textAlign = 'left';
     tctx.fillText('LIVE · VIDEO · QUIZ', left, gy2 + 22 * dpr);
-    tctx.textAlign = 'right';
-    tctx.fillText(`© ${new Date().getFullYear()}`, right, gy2 + 22 * dpr);
     tctx.restore();
 
-    // The headline.
+    // The headline (AGILIX).
     setFont(size);
-    tctx.direction = ar ? 'rtl' : 'ltr';
+    tctx.direction = arabicText ? 'rtl' : 'ltr';
     tctx.textAlign = 'center';
     tctx.fillStyle = config.theme.ink || '#0E1630';
     lines.forEach((l, i) => tctx.fillText(l, cw / 2, top + asc + i * lineH));
+    // Arabic wordmark, aligned with the end of the headline.
+    if (arWordmark) tctx.drawImage(arWordmark, right - arW, top + headH + arGap, arW, arH);
     textTex.needsUpdate = true;
   }
   refreshText = drawText;
@@ -950,6 +985,17 @@ function initScene() {
   ]).then(drawText).catch(drawText);
   document.fonts?.ready?.then(drawText);
 }
+</script>
+<script>
+  /* Opening the files straight from disk (file://) blocks the platform's scripts and data.
+     Show a clear hint instead of a blank page. */
+  if (location.protocol === 'file:') document.addEventListener('DOMContentLoaded', function () {
+    var d = document.createElement('div');
+    d.setAttribute('role', 'alert');
+    d.style.cssText = 'position:relative;z-index:60;margin:16px auto;max-width:760px;padding:16px 20px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;font:15px/1.7 Tajawal,Poppins,sans-serif;text-align:center';
+    d.innerHTML = '<b>افتح المنصة عبر Vercel أو خادم محلي</b><br>المتصفح يمنع تشغيل الملفات مباشرةً من القرص. شغّل <code>npx serve .</code> داخل المجلد ثم افتح الرابط الظاهر.<br><span dir="ltr">Open the site through Vercel or a local server: run <code>npx serve .</code> in this folder.</span>';
+    document.body.insertBefore(d, document.querySelector('main'));
+  });
 </script>
 </body>
 </html>
