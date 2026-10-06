@@ -120,7 +120,7 @@ export const param = (name) => new URLSearchParams(location.search).get(name);
 
 export function setTitle(title) {
   const brand = tx(app.site?.brand?.name);
-  document.title = title ? `${title} · ${brand}` : brand;
+  document.title = title && title !== brand ? `${title} · ${brand}` : brand;
 }
 
 /* ------------------------------------------------------------------ state */

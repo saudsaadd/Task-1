@@ -22,7 +22,7 @@ function sectionHead(eyebrow, title, text, extra = '', cls = '') {
 
 async function render() {
   const site = app.site;
-  setTitle(tx(site.hero.headline));
+  setTitle(tx(site.hero.headline) === tx(site.brand.name) ? tx(site.brand.tagline) : tx(site.hero.headline));
   const [catalog, reviews, plans, faq] = await Promise.all([data.courses(), data.testimonials(), data.plans(), data.faq()]);
   const courses = catalog.courses;
 
