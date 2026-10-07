@@ -1,24 +1,25 @@
-// Vercel serverless function: the admin studio (studio.html). Owner-only.
+// Vercel serverless function: the owner studio (studio.html). Free of charge.
+// Cloud text and images run on the Cloudflare Workers AI free allowance
+// (10,000 neurons a day, no credit card, renewed at 00:00 UTC). Local text and
+// video assembly happen in the browser and never reach this function.
+//
 // One endpoint, routed by ?action=
-//   POST ?action=login    { password }                            → { token, expiresAt, features }
-//   GET  ?action=session                                          → { features }
-//   POST ?action=chat     { messages: [{ role, content }] }       → streamed plain text (Claude)
-//   POST ?action=enhance  { prompt, kind: "image" | "video" }     → { prompt }  (Claude rewrites a brief into a model prompt)
-//   POST ?action=submit   { kind, model, prompt, options, image } → { job }     (queues a fal.ai generation)
-//   POST ?action=status   { job }                                 → { status, position?, media?, error? }
+//   POST ?action=login    { password }                       → { token, expiresAt, features }
+//   GET  ?action=session                                     → { features }
+//   POST ?action=chat     { messages: [{ role, content }] }  → streamed plain text
+//   POST ?action=enhance  { prompt, kind: "image" | "video" }→ { prompt }
+//   POST ?action=image    { model, prompt, ratio, seed? }    → { image (base64), mime, width, height }
 // Every action except login needs "Authorization: Bearer <token>".
 //
 // Environment variables (Vercel → Project → Settings → Environment Variables):
-//   ADMIN_PASSWORD     required, at least 12 characters: the studio password
-//   ANTHROPIC_API_KEY  chat and prompt enhancement (Claude)
-//   FAL_KEY            image and video generation (https://fal.ai/dashboard/keys)
-// The models the studio may call are listed in data/studio.json.
-import Anthropic from '@anthropic-ai/sdk';
+//   ADMIN_PASSWORD          required, at least 12 characters: the studio password
+//   CLOUDFLARE_ACCOUNT_ID   Cloudflare account id (free account)
+//   CLOUDFLARE_API_TOKEN    API token created from the "Workers AI" template
+// The cloud models the studio may call are listed in data/studio.json.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const MODEL = process.env.STUDIO_MODEL || 'claude-opus-5-5';
 const MIN_PASSWORD = 12;
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 const LOGIN_LIMIT = 8; // failed attempts per IP per window
@@ -29,15 +30,10 @@ const TIME_BUDGET_MS = Number(process.env.STUDIO_MAX_SECONDS || 55) * 1000;
 const CUT_MARKER = '\n\n[[continue]]';
 const MAX_MESSAGES = 40;
 const MAX_MESSAGE_CHARS = 20000;
-const MAX_PROMPT_CHARS = 4000;
-const MAX_IMAGE_URL_CHARS = 2048;
-const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // uploads arrive as data: URIs; Vercel request bodies are capped at 4.5 MB
-const FAL_QUEUE = 'https://queue.fal.run/';
-const FAL_MODEL_RE = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9.-]*)+$/i;
-const FAL_REQUEST_RE = /^https:\/\/queue\.fal\.run\/[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9.-]*)*\/requests\/([0-9a-f][0-9a-f-]{7,63})(\/status)?$/i;
-const DATA_IMAGE_RE = /^data:image\/(png|jpeg|webp);base64,([a-z0-9+/]+=*)$/i;
+const MAX_PROMPT_CHARS = 2000;
+const CF_API = 'https://api.cloudflare.com/client/v4/accounts/';
+const MODEL_RE = /^@cf\/[a-z0-9-]+\/[a-z0-9.-]+$/i;
 
-let client;
 let config;
 let chatSystem;
 const failures = new Map();
@@ -57,7 +53,8 @@ function readBody(req) {
 
 const clientIp = (req) => String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 const pick = (v, lang = 'en') => (v && typeof v === 'object' ? v[lang] || v.en || v.ar || '' : String(v ?? ''));
-const features = () => ({ chat: !!process.env.ANTHROPIC_API_KEY, image: !!process.env.FAL_KEY, video: !!process.env.FAL_KEY });
+const cloudReady = () => !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
+const features = () => ({ cloud: cloudReady() });
 
 async function readData(file) {
   return JSON.parse(await readFile(path.join(process.cwd(), 'data', file), 'utf8'));
@@ -122,37 +119,51 @@ async function login(req, res, body) {
   return json(res, 200, { ...issueToken(), features: features() });
 }
 
-/* ------------------------------------------------------------------- Claude */
-function anthropicStatus(err) {
-  if (err instanceof Anthropic.RateLimitError) return [429, 'rate_limited'];
-  if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) return [502, 'provider_auth'];
-  if (err instanceof Anthropic.BadRequestError) return [400, 'provider_rejected'];
-  if (err instanceof Anthropic.APIError) return [502, 'provider_unavailable'];
-  return [500, 'server_error'];
+/* -------------------------------------------------------- Cloudflare calls */
+function cfFetch(pathname, init = {}) {
+  return fetch(`${CF_API}${encodeURIComponent(process.env.CLOUDFLARE_ACCOUNT_ID)}/ai/${pathname}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, ...(init.headers || {}) }
+  });
+}
+
+// Workers AI answers errors either as { errors: [{ code, message }] } or { error: … }.
+async function cfError(res) {
+  const text = await res.text().catch(() => '');
+  let detail = text.slice(0, 400);
+  let code = 0;
+  try {
+    const body = JSON.parse(text);
+    const first = body?.errors?.[0] || body?.error;
+    code = Number(first?.code) || 0;
+    detail = String(first?.message || (typeof body?.error === 'string' ? body.error : '') || detail).slice(0, 400);
+  } catch { /* not JSON */ }
+  const quota = code === 3036 || /daily free allocation|neurons/i.test(detail);
+  const error = quota ? 'quota_exhausted'
+    : res.status === 401 || res.status === 403 ? 'provider_auth'
+      : res.status === 429 ? 'rate_limited'
+        : res.status === 400 || res.status === 422 ? 'provider_rejected' : 'provider_unavailable';
+  const status = error === 'quota_exhausted' || error === 'rate_limited' ? 429 : error === 'provider_rejected' ? 400 : 502;
+  return { status, error, detail };
 }
 
 async function buildChatSystem() {
   if (chatSystem) return chatSystem;
   const [site, catalog] = await Promise.all([readData('site.json'), readData('courses.json')]);
   const theme = site.theme || {};
-  const courses = catalog.courses.map((c) => `- ${pick(c.title, 'en')} / ${pick(c.title, 'ar')} (id: ${c.id}, ${c.level}, ${c.lessons.length} lessons): ${c.lessons.map((l) => pick(l.title, 'en')).join('; ')}`).join('\n');
-  chatSystem = `You are the content studio assistant for AGILIX, an Arabic/English online training platform. You work with the platform's owner, who uses you to produce course material and media.
-
-Typical work: course outlines and descriptions, lesson video scripts (with scene and on-screen text notes), quiz questions, marketing copy, social posts, emails, and prompts for image and video generation models.
+  const courses = catalog.courses.map((c) => `- ${pick(c.title, 'en')} / ${pick(c.title, 'ar')} (id: ${c.id}, ${c.level}, ${c.lessons.length} lessons)`).join('\n');
+  chatSystem = `You are the content studio assistant for AGILIX, an Arabic/English online training platform. You work with the platform's owner on course material and media: course outlines and descriptions, lesson video scripts, quiz questions, marketing copy, social posts and prompts for image generation.
 
 Brand rules:
-- The name is always written "AGILIX" in Latin capitals, in Arabic text too. Never translate or transliterate it (never write أجيليكس unless the owner asks for the Arabic wordmark itself).
+- The name is always written "AGILIX" in Latin capitals, in Arabic text too. Never translate or transliterate it.
 - Tagline: "${pick(site.brand?.tagline, 'ar')}" / "${pick(site.brand?.tagline, 'en')}".
-- Colours: primary ${theme.primary || '#2E5BFF'}, teal ${theme.secondary || '#14B8C4'}, coral ${theme.highlight || '#FF6B3D'}, ink ${theme.ink || '#0E1630'}, light background ${theme.background || '#F6F7FB'}. Visual style: light, clean, modern, glass and soft gradients.
+- Colours: primary ${theme.primary || '#2E5BFF'}, teal ${theme.secondary || '#14B8C4'}, coral ${theme.highlight || '#FF6B3D'}, ink ${theme.ink || '#0E1630'}. Visual style: light, clean, modern, glass and soft gradients.
 
 How to answer:
 - Reply in the language of the owner's latest message. Arabic replies use clear Modern Standard Arabic.
 - Give complete, ready-to-use output. Use Markdown headings, lists and tables where they help.
-- When asked for an image or video prompt, write it in English (the generation models follow English best), as one paragraph covering subject, setting, composition, camera, lighting and style. Keep any on-screen text short and quoted.
-- When asked for quiz questions or lessons "for the platform" or "as JSON", output JSON in a fenced block that matches the platform's data files:
-  - Question (data/quizzes.json → quizzes[].questions[]): {"id":"q1","type":"single"|"multiple"|"truefalse"|"text","points":1,"question":{"ar":"…","en":"…"},"options":[{"ar":"…","en":"…"}],"answer":<index | [indexes] | true/false | ["accepted text", …]>,"explanation":{"ar":"…","en":"…"}}. truefalse and text questions have no options.
-  - Lesson (data/courses.json → courses[].lessons[]): {"id":"…","type":"video"|"live"|"reading","duration":<minutes>,"title":{"ar":"…","en":"…"},"summary":{"ar":"…","en":"…"},"videoUrl":"…"}.
-- Generated images can be used as a course "cover" in data/courses.json, and generated videos as a lesson "videoUrl"; mention this when relevant.
+- Image prompts are written in English, as one paragraph covering subject, setting, composition, lighting and style.
+- Quiz questions "for the platform" or "as JSON" go in a fenced JSON block shaped like: {"id":"q1","type":"single"|"multiple"|"truefalse"|"text","points":1,"question":{"ar":"…","en":"…"},"options":[{"ar":"…","en":"…"}],"answer":<index | [indexes] | true/false | ["accepted text"]>,"explanation":{"ar":"…","en":"…"}}.
 
 Current catalogue:
 ${courses}`;
@@ -174,42 +185,83 @@ function cleanMessages(input) {
   return out.at(-1)?.role === 'user' ? out : [];
 }
 
+/** Text of one streamed event, in either the OpenAI chunk shape or the classic Workers AI one. */
+function deltaText(event) {
+  const choice = event?.choices?.[0];
+  if (typeof choice?.delta?.content === 'string') return choice.delta.content;
+  if (typeof event?.response === 'string') return event.response;
+  return '';
+}
+
+const stripThinking = (text) => text.replace(/<think>[\s\S]*?<\/think>\s*/g, '');
+
 async function chat(req, res, body) {
-  if (!process.env.ANTHROPIC_API_KEY) return json(res, 503, { error: 'chat_not_configured' });
+  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
   const messages = cleanMessages(body.messages);
   if (!messages.length) return json(res, 400, { error: 'invalid_messages' });
-
-  client ??= new Anthropic();
+  const cfg = await loadConfig();
   const system = await buildChatSystem();
-  const stream = client.beta.messages.stream({
-    model: MODEL,
-    max_tokens: 64000,
-    output_config: { effort: 'low' },
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-    messages
-  });
 
-  // Headers go out with the first token, so a failed request can still answer with an error status.
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, TIME_BUDGET_MS);
   const open = () => {
     if (res.headersSent) return;
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' });
   };
-  let timedOut = false;
-  const timer = setTimeout(() => { timedOut = true; stream.abort(); }, TIME_BUDGET_MS);
 
   try {
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        open();
-        res.write(event.delta.text);
+    const upstream = await cfFetch('v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: cfg.cloud.chatModel,
+        messages: [{ role: 'system', content: system }, ...messages],
+        stream: true,
+        max_tokens: cfg.cloud.maxTokens || 4096,
+        ...(cfg.cloud.extra || {})
+      }),
+      signal: controller.signal
+    });
+    if (!upstream.ok) {
+      const { status, error, detail } = await cfError(upstream);
+      console.error('[api/studio] chat', upstream.status, detail);
+      return json(res, status, { error, detail });
+    }
+
+    const reader = upstream.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finish = null;
+    let inThink = false;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        let event;
+        try { event = JSON.parse(payload); } catch { continue; }
+        finish = event?.choices?.[0]?.finish_reason || finish;
+        let text = deltaText(event);
+        // Models that still emit <think> blocks: drop them from the visible answer.
+        if (text.includes('<think>')) { inThink = true; text = text.split('<think>')[0]; }
+        if (inThink) {
+          const end = text.indexOf('</think>');
+          if (end < 0) continue;
+          inThink = false;
+          text = text.slice(end + 8);
+        }
+        if (text) { open(); res.write(text); }
       }
     }
-    const final = await stream.finalMessage();
     open();
-    if (final.stop_reason === 'refusal') res.write('\n\n[[refused]]');
-    else if (final.stop_reason === 'max_tokens') res.write(CUT_MARKER);
+    if (finish === 'length') res.write(CUT_MARKER);
     res.end();
   } catch (err) {
     if (timedOut) {
@@ -217,9 +269,8 @@ async function chat(req, res, body) {
       res.write(CUT_MARKER);
       return res.end();
     }
-    const [status, code] = anthropicStatus(err);
-    console.error('[api/studio] chat', status, err?.message);
-    if (!res.headersSent) return json(res, status, { error: code });
+    console.error('[api/studio] chat', err?.message);
+    if (!res.headersSent) return json(res, 502, { error: 'provider_unavailable' });
     res.end();
   } finally {
     clearTimeout(timer);
@@ -227,160 +278,89 @@ async function chat(req, res, body) {
 }
 
 async function enhance(req, res, body) {
-  if (!process.env.ANTHROPIC_API_KEY) return json(res, 503, { error: 'chat_not_configured' });
+  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
   const kind = body.kind === 'video' ? 'video' : 'image';
   const brief = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, MAX_PROMPT_CHARS) : '';
   if (!brief) return json(res, 400, { error: 'empty_prompt' });
-
-  client ??= new Anthropic();
+  const cfg = await loadConfig();
   const system = kind === 'video'
-    ? 'You turn a short brief (often in Arabic) into one English prompt for a text-to-video model that makes clips of up to 8 seconds with sound. Describe the subject and action, setting, camera movement, lighting, mood and style, and the sound or a short spoken line if the brief implies one. Keep any on-screen text short and in quotes. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 120 words, no title, no quotes around it, no notes.'
-    : 'You turn a short brief (often in Arabic) into one English prompt for a text-to-image model. Describe the subject, composition, setting, lighting, colour palette and style. Keep any text that must appear in the image short and in quotes. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 100 words, no title, no quotes around it, no notes.';
+    ? 'You turn a short brief (often in Arabic) into one English prompt for an image that will be animated into a short video. Describe the subject, setting, composition, lighting, mood and style. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 90 words, no title, no quotes around it, no notes.'
+    : 'You turn a short brief (often in Arabic) into one English prompt for a text-to-image model. Describe the subject, composition, setting, lighting, colour palette and style. Keep any text that must appear in the image short and in quotes. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 90 words, no title, no quotes around it, no notes.';
   try {
-    const message = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 4000,
-      output_config: { effort: 'low' },
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system,
-      messages: [{ role: 'user', content: brief }]
+    const upstream = await cfFetch('v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: cfg.cloud.chatModel,
+        messages: [{ role: 'system', content: system }, { role: 'user', content: brief }],
+        max_tokens: 400,
+        ...(cfg.cloud.extra || {})
+      }),
+      signal: AbortSignal.timeout(45000)
     });
-    if (message.stop_reason === 'refusal') return json(res, 422, { error: 'refused' });
-    const prompt = message.content.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
+    if (!upstream.ok) {
+      const { status, error, detail } = await cfError(upstream);
+      return json(res, status, { error, detail });
+    }
+    const data = await upstream.json();
+    const raw = data?.choices?.[0]?.message?.content ?? data?.result?.response ?? data?.response ?? '';
+    const prompt = stripThinking(String(raw)).trim().replace(/^["“]|["”]$/g, '');
     if (!prompt) return json(res, 502, { error: 'empty_response' });
     return json(res, 200, { prompt });
   } catch (err) {
-    const [status, code] = anthropicStatus(err);
-    console.error('[api/studio] enhance', status, err?.message);
-    return json(res, status, { error: code });
-  }
-}
-
-/* ------------------------------------------------------------------ fal.ai */
-async function falFetch(url, init = {}) {
-  return fetch(url, {
-    ...init,
-    headers: { Authorization: `Key ${process.env.FAL_KEY}`, 'Content-Type': 'application/json', ...(init.headers || {}) },
-    signal: AbortSignal.timeout(25000)
-  });
-}
-
-async function falError(res) {
-  let detail = '';
-  try {
-    const body = await res.json();
-    const d = body?.detail ?? body?.error ?? body?.message;
-    detail = Array.isArray(d) ? d.map((x) => [x?.loc?.slice(1).join('.'), x?.msg].filter(Boolean).join(': ')).join('; ') : typeof d === 'string' ? d : JSON.stringify(d ?? '');
-  } catch { /* not JSON */ }
-  const code = res.status === 401 || res.status === 403 ? 'provider_auth'
-    : res.status === 402 ? 'provider_billing'
-      : res.status === 422 || res.status === 400 ? 'provider_rejected'
-        : res.status === 429 ? 'rate_limited' : 'provider_unavailable';
-  return { code, detail: String(detail).slice(0, 500) };
-}
-
-function validImage(value) {
-  if (typeof value !== 'string') return false;
-  if (value.startsWith('https://')) return value.length <= MAX_IMAGE_URL_CHARS && !/\s/.test(value);
-  const m = value.match(DATA_IMAGE_RE);
-  return !!m && Math.floor(m[2].length * 3 / 4) <= MAX_IMAGE_BYTES;
-}
-
-async function submit(req, res, body) {
-  if (!process.env.FAL_KEY) return json(res, 503, { error: 'media_not_configured' });
-  const kind = body.kind === 'video' ? 'video' : body.kind === 'image' ? 'image' : null;
-  if (!kind) return json(res, 400, { error: 'invalid_kind' });
-  const cfg = await loadConfig();
-  const model = (cfg[kind] || []).find((m) => m.id === body.model);
-  if (!model || !FAL_MODEL_RE.test(model.id)) return json(res, 400, { error: 'unknown_model' });
-
-  const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
-  if (!prompt) return json(res, 400, { error: 'empty_prompt' });
-  if (prompt.length > MAX_PROMPT_CHARS) return json(res, 400, { error: 'prompt_too_long' });
-
-  const input = { ...(model.defaults || {}), prompt };
-  const chosen = body.options && typeof body.options === 'object' ? body.options : {};
-  for (const opt of model.options || []) {
-    const value = Object.hasOwn(chosen, opt.param) ? chosen[opt.param] : opt.default;
-    if (!opt.values.includes(value)) return json(res, 400, { error: 'invalid_option', detail: opt.param });
-    input[opt.param] = value;
-  }
-  if (model.image) {
-    if (!validImage(body.image)) return json(res, 400, { error: 'invalid_image' });
-    input[model.image.param || 'image_url'] = body.image;
-  }
-
-  try {
-    const r = await falFetch(FAL_QUEUE + model.id, { method: 'POST', body: JSON.stringify(input) });
-    if (!r.ok) {
-      const { code, detail } = await falError(r);
-      console.error('[api/studio] submit', r.status, detail);
-      return json(res, code === 'provider_rejected' ? 400 : 502, { error: code, detail });
-    }
-    const data = await r.json();
-    const statusUrl = String(data.status_url || '');
-    const responseUrl = String(data.response_url || '');
-    if (!FAL_REQUEST_RE.test(statusUrl) || !FAL_REQUEST_RE.test(responseUrl)) {
-      return json(res, 502, { error: 'provider_unavailable', detail: 'unexpected queue response' });
-    }
-    return json(res, 200, { job: { id: String(data.request_id || statusUrl.match(FAL_REQUEST_RE)[1]), kind, model: model.id, statusUrl, responseUrl } });
-  } catch (err) {
-    console.error('[api/studio] submit', err?.message);
+    console.error('[api/studio] enhance', err?.message);
     return json(res, 502, { error: 'provider_unavailable' });
   }
 }
 
-// The job's URLs come back from the browser, so they are checked against the
-// fal queue host and request-id shape before the FAL_KEY is sent anywhere.
-function jobUrls(job) {
-  const statusUrl = String(job?.statusUrl || '');
-  const responseUrl = String(job?.responseUrl || '');
-  const s = statusUrl.match(FAL_REQUEST_RE);
-  const r = responseUrl.match(FAL_REQUEST_RE);
-  if (!s || !r || !s[2] || r[2] || s[1] !== r[1]) return null;
-  return { statusUrl, responseUrl };
+function imageMime(b64) {
+  if (b64.startsWith('/9j/')) return 'image/jpeg';
+  if (b64.startsWith('iVBOR')) return 'image/png';
+  if (b64.startsWith('UklGR')) return 'image/webp';
+  return 'image/jpeg';
 }
 
-function collectMedia(result) {
-  const media = [];
-  const add = (file, type) => {
-    if (file && typeof file.url === 'string' && /^https:\/\//.test(file.url)) {
-      media.push({ type, url: file.url, width: file.width || null, height: file.height || null, contentType: file.content_type || null });
-    }
-  };
-  for (const img of Array.isArray(result?.images) ? result.images : []) add(img, 'image');
-  add(result?.image, 'image');
-  for (const vid of Array.isArray(result?.videos) ? result.videos : []) add(vid, 'video');
-  add(result?.video, 'video');
-  return media;
-}
+async function image(req, res, body) {
+  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
+  const cfg = await loadConfig();
+  const model = (cfg.image || []).find((m) => m.id === body.model);
+  if (!model || !MODEL_RE.test(model.id)) return json(res, 400, { error: 'unknown_model' });
+  const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
+  if (!prompt) return json(res, 400, { error: 'empty_prompt' });
+  if (prompt.length > MAX_PROMPT_CHARS) return json(res, 400, { error: 'prompt_too_long' });
+  const ratio = Object.hasOwn(model.sizes, body.ratio) ? body.ratio : Object.keys(model.sizes)[0];
+  const [width, height] = model.sizes[ratio];
+  const seed = Number.isInteger(body.seed) && body.seed >= 0 && body.seed < 2 ** 31 ? body.seed : null;
 
-async function status(req, res, body) {
-  if (!process.env.FAL_KEY) return json(res, 503, { error: 'media_not_configured' });
-  const urls = jobUrls(body.job);
-  if (!urls) return json(res, 400, { error: 'invalid_job' });
+  let init;
+  if (model.input === 'multipart') {
+    const form = new FormData();
+    form.append('prompt', prompt);
+    form.append('width', String(width));
+    form.append('height', String(height));
+    if (seed !== null) form.append('seed', String(seed));
+    init = { method: 'POST', body: form };
+  } else {
+    init = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, ...(model.params || {}), ...(seed !== null ? { seed } : {}) })
+    };
+  }
+
   try {
-    const r = await falFetch(urls.statusUrl, { method: 'GET' });
-    if (!r.ok) {
-      const { code, detail } = await falError(r);
-      return json(res, r.status === 404 ? 404 : 502, { error: r.status === 404 ? 'job_not_found' : code, detail });
+    const upstream = await cfFetch(`run/${model.id}`, { ...init, signal: AbortSignal.timeout(50000) });
+    if (!upstream.ok) {
+      const { status, error, detail } = await cfError(upstream);
+      console.error('[api/studio] image', upstream.status, detail);
+      return json(res, status, { error, detail });
     }
-    const s = await r.json();
-    if (s.status === 'IN_QUEUE') return json(res, 200, { status: 'queued', position: Number.isFinite(s.queue_position) ? s.queue_position : null });
-    if (s.status !== 'COMPLETED') return json(res, 200, { status: 'running' });
-    if (s.error) return json(res, 200, { status: 'failed', error: String(s.error).slice(0, 500) });
-
-    const out = await falFetch(urls.responseUrl, { method: 'GET' });
-    if (!out.ok) {
-      const { detail } = await falError(out);
-      return json(res, 200, { status: 'failed', error: detail || `HTTP ${out.status}` });
-    }
-    const media = collectMedia(await out.json());
-    if (!media.length) return json(res, 200, { status: 'failed', error: 'no_media' });
-    return json(res, 200, { status: 'done', media });
+    const data = await upstream.json();
+    const b64 = String(data?.result?.image || data?.image || '');
+    if (!/^[A-Za-z0-9+/]+=*$/.test(b64) || b64.length < 100) return json(res, 502, { error: 'empty_response' });
+    return json(res, 200, { image: b64, mime: imageMime(b64), width, height, model: model.id });
   } catch (err) {
-    console.error('[api/studio] status', err?.message);
+    console.error('[api/studio] image', err?.message);
     return json(res, 502, { error: 'provider_unavailable' });
   }
 }
@@ -391,8 +371,7 @@ const ROUTES = {
   session: { method: 'GET', run: (req, res) => json(res, 200, { features: features() }) },
   chat: { method: 'POST', run: chat },
   enhance: { method: 'POST', run: enhance },
-  submit: { method: 'POST', run: submit },
-  status: { method: 'POST', run: status }
+  image: { method: 'POST', run: image }
 };
 
 export default async function handler(req, res) {

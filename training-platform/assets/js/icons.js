@@ -69,7 +69,8 @@ const P = {
   copy: '<rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
   upload: '<path d="M12 16V4M7 9l5-5 5 5M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/>',
-  stop: '<rect x="6" y="6" width="12" height="12" rx="2.5"/>'
+  stop: '<rect x="6" y="6" width="12" height="12" rx="2.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>'
 };
 
 export function icon(name, cls = '') {

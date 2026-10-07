@@ -24,7 +24,7 @@
 | الإشعارات | الجرس أعلى كل صفحة | إعلانات إدارية مع عدّاد غير المقروء وشريط إعلان مثبّت |
 | الحسابات | نافذة منبثقة في كل الصفحات | «تسجيل الدخول» و«حساب جديد» (الاسم، البريد، كلمة المرور) مع حفظ في `localStorage`، ثم تحويل تلقائي إلى لوحتي |
 | دليل الهوية | `brand.html` | الشعارات للتحميل، الألوان، الخطوط، قواعد الاستخدام |
-| استوديو AGILIX | `studio.html` (للمالك فقط) | محادثة Claude لكتابة المحتوى، وتوليد الصور والفيديو، ومكتبة لما ولّدته |
+| استوديو AGILIX | `studio.html` (للمالك فقط) | أدوات ذكاء اصطناعي مجانية: محادثة لكتابة المحتوى (سحابية أو على جهازك)، وتوليد الصور، وصانع فيديو في المتصفح، ومكتبة لما صنعته |
 
 زر **English / العربية** في الأعلى يبدّل اللغة واتجاه الصفحة (RTL / LTR) فورًا، ويتذكر اختيار الزائر.
 
@@ -98,47 +98,56 @@ npx vercel dev
 
 ---
 
-## استوديو AGILIX: أداة الذكاء الاصطناعي الخاصة بك (للمالك فقط)
-صفحة مخفية على `www.agilix.space/studio.html`، غير موجودة في القائمة ولا تظهر في محركات البحث، وتطلب كلمة مرور لا يعرفها غيرك. فيها أربعة أقسام:
+## استوديو AGILIX: أداة الذكاء الاصطناعي الخاصة بك (للمالك فقط، مجانًا)
+صفحة مخفية على `www.agilix.space/studio.html`، غير موجودة في القائمة ولا تظهر في محركات البحث، وتطلب كلمة مرور لا يعرفها غيرك. **لا تستخدم أي خدمة مدفوعة ولا تطلب بطاقة ائتمان.**
 
-| القسم | ماذا يفعل | يعمل بـ |
-|---|---|---|
-| **المحادثة** | يكتب سكربتات الدروس، وأوصاف الدورات، وأسئلة الاختبارات بصيغة JSON جاهزة للصق في `quizzes.json`، والمنشورات التسويقية. يعرف هوية AGILIX ودوراتك | Claude |
-| **الصور** | يولّد أغلفة الدورات وصور التسويق من وصف نصي. زر «حسّن الوصف» يحوّل وصفك العربي إلى وصف إنجليزي مفصّل تفهمه النماذج أفضل | fal.ai (Nano Banana 2، Imagen 4) |
-| **الفيديو** | يولّد فيديو مع صوت (حتى 8 ثوانٍ) من وصف نصي، أو يحرّك صورة من المكتبة أو من جهازك | fal.ai (Google Veo 3.1 Fast) |
-| **المكتبة** | كل ما ولّدته: فتح، تنزيل، نسخ الرابط، تحريك صورة، إعادة استخدام الوصف، حذف | |
+| القسم | ماذا يفعل | يعمل بـ | الحد |
+|---|---|---|---|
+| **المحادثة** | يكتب سكربتات الدروس، وأوصاف الدورات، وأسئلة الاختبارات بصيغة JSON، والمنشورات التسويقية | محركان تختار بينهما: **السحابة المجانية** (Gemma 4 من Google عبر Cloudflare)، أو **على جهازك** (Qwen3 مفتوح المصدر عبر WebLLM) | السحابة: حصة يومية مجانية تتجدد. على جهازك: **بلا حدود** |
+| **الصور** | يولّد أغلفة الدورات وصور التسويق، مع زر «حسّن الوصف» | FLUX.2 klein و FLUX.1 schnell عبر Cloudflare | حوالي 95 إلى 170 صورة يوميًا مجانًا، تتجدد كل يوم |
+| **الفيديو** | صانع فيديو: اكتب الموضوع فيكتب لك السيناريو، ثم يولّد صور المشاهد، وتضيف تعليقك بصوتك أو ملفًا صوتيًا، ويصدّر فيديو MP4 أو WebM بشعار AGILIX ونصوص المشاهد | متصفحك نفسه (Canvas و MediaRecorder) | **بلا حدود** |
+| **المكتبة** | كل صورك وفيديوهاتك: تنزيل، إضافة كمشهد، إعادة استخدام الوصف، حذف | تخزين المتصفح (IndexedDB) | حسب مساحة جهازك |
 
 ### التفعيل (مرة واحدة)
-1. ارفع المشروع كاملًا كالعادة، ومعه `api/` و`package.json` و`vercel.json` و`studio.html` و`data/studio.json`.
-2. في Vercel ← مشروعك ← **Settings ← Environment Variables** أضف:
+1. ارفع المشروع كاملًا كالعادة، ومعه `api/` و`vercel.json` و`studio.html` و`data/studio.json` و`assets/js/studio-llm-worker.js`.
+2. أنشئ حساب Cloudflare مجانيًا من [dash.cloudflare.com](https://dash.cloudflare.com/sign-up). لا يطلب بطاقة.
+3. في لوحة Cloudflare افتح صفحة **Workers AI** ← **Use REST API**:
+   - اضغط **Create a Workers AI API Token** ← **Create API Token** ← **Copy API Token**. هذا هو المفتاح.
+   - وفي نفس الصفحة انسخ قيمة **Account ID**.
+4. في Vercel ← مشروعك ← **Settings ← Environment Variables** أضف:
 
    | المتغير | الوصف |
    |---|---|
    | `ADMIN_PASSWORD` | **مطلوب.** كلمة مرور الاستوديو، 12 حرفًا على الأقل. اجعلها طويلة وعشوائية |
-   | `ANTHROPIC_API_KEY` | للمحادثة وتحسين الأوصاف، من [console.anthropic.com](https://console.anthropic.com) (هو نفسه مفتاح المساعد الذكي) |
-   | `FAL_KEY` | للصور والفيديو، من [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) بعد شحن رصيد |
+   | `CLOUDFLARE_ACCOUNT_ID` | معرّف حسابك في Cloudflare |
+   | `CLOUDFLARE_API_TOKEN` | مفتاح Workers AI الذي أنشأته |
 
-3. أعد النشر (Redeploy)، ثم افتح `www.agilix.space/studio.html` وأدخل كلمة المرور.
+5. أعد النشر (Redeploy)، ثم افتح `www.agilix.space/studio.html` وأدخل كلمة المرور.
 
-الصفحة تشرح لك حالتها بنفسها: إن نقص `ADMIN_PASSWORD` تعرض خطوات الإعداد، وإن ظهرت رسالة «تعذّر الوصول إلى خادم الاستوديو» فمعناها أن مجلد `api` لم يعمل كدوال خادم. في هذه الحالة انشر بإحدى طريقتَي النشر أعلاه (GitHub أو Vercel CLI).
+بدون متغيرَي Cloudflare يبقى المحرك المحلي وصانع الفيديو يعملان، وتظهر رسالة توضّح كيف تفعّل السحابة. وإن ظهرت رسالة «تعذّر الوصول إلى خادم الاستوديو» فمعناها أن مجلد `api` لم يعمل كدوال خادم؛ انشر حينها عبر GitHub أو Vercel CLI.
+
+### «مجاني» و«بلا حدود»: ما الفرق؟
+- **السحابة المجانية (Cloudflare Workers AI):** 10,000 وحدة يوميًا بلا مقابل، تكفي تقريبًا 150 رسالة أو 95 صورة، وتتجدد الساعة 3 فجرًا بتوقيت السعودية (00:00 UTC). عند انتهائها تظهر رسالة واضحة، ولا يُخصم أي مبلغ لأن الحساب المجاني لا يحمل بطاقة.
+- **على جهازك (WebLLM):** النموذج يعمل على كرت الشاشة في جهازك، فلا حصة ولا تكلفة ولا يخرج نصك من الجهاز. يحتاج Chrome أو Edge حديثًا يدعم WebGPU على كمبيوتر، ويُنزَّل مرة واحدة: حوالي 1.1 جيجابايت (Qwen3 1.7B)، أو 2.3 (Qwen3 4B، الموصى به)، أو 4.6 (Qwen3 8B). جودته العربية أقل من السحابة لكنها جيدة للمسودات.
+- **صانع الفيديو:** كل شيء يحدث في متصفحك، فهو مجاني بلا حدود. التصدير يستغرق نفس مدة الفيديو، فأبقِ الصفحة ظاهرة حتى ينتهي. Chrome يصدّر MP4، وبعض المتصفحات تصدّر WebM، وكلاهما يقبله YouTube.
+- **ما ليس مجانيًا في أي مكان:** توليد مقاطع فيديو بالذكاء الاصطناعي من نص (مثل Veo أو Sora) يحتاج خوادم ضخمة، ولا توجد له اليوم خدمة مجانية بلا حدود. لذلك يصنع الاستوديو الفيديو من صور مولّدة مع حركة سينمائية ونصوص وصوت.
 
 ### استخدام النتائج في المنصة
-- **غلاف دورة:** انسخ رابط الصورة من المكتبة وضعه في `cover` للدورة داخل `data/courses.json`.
-- **فيديو درس:** انسخ رابط الفيديو وضعه في `videoUrl` للدرس.
-- الملفات محفوظة على خوادم fal.ai وقد لا تبقى روابطها للأبد. للاستخدام الدائم نزّل الملف وارفعه مع موقعك (مثلًا في `assets/media/`) أو على YouTube، وضع ذلك الرابط.
-- المحادثة والمكتبة محفوظتان في متصفحك فقط.
+- الملفات محفوظة في متصفحك على هذا الجهاز فقط، فنزّل ما تريد استخدامه.
+- **غلاف دورة:** ارفع الصورة مع موقعك (مثلًا في `assets/media/`) وضع مسارها في `cover` للدورة داخل `data/courses.json`.
+- **فيديو درس:** ارفعه على YouTube أو مع موقعك، وضع رابطه في `videoUrl` للدرس.
 
-### التكلفة والأمان
-- كل توليد يُخصم من رصيدك عند Anthropic أو fal.ai مباشرة، والفيديو أغلى بكثير من الصور.
-- كل طلب يمر عبر الخادم `api/studio.js`، فلا تصل المفاتيح إلى المتصفح أبدًا. ويقبل الخادم فقط النماذج والخيارات المكتوبة في `data/studio.json`.
-- تغيير `ADMIN_PASSWORD` (ثم إعادة النشر) يُخرج كل الجلسات المفتوحة. وبعد 8 محاولات خاطئة من نفس عنوان الإنترنت يتوقف الخادم عن قبول الدخول منه 15 دقيقة. هذه حماية إضافية فقط، والحماية الأساسية كلمة مرور طويلة وعشوائية.
-- الجلسة تنتهي بعد 12 ساعة.
+### الأمان
+- كل طلب سحابي يمر عبر الخادم `api/studio.js`، فلا يصل مفتاح Cloudflare إلى المتصفح أبدًا. ويقبل الخادم فقط النماذج المكتوبة في `data/studio.json`.
+- تغيير `ADMIN_PASSWORD` ثم إعادة النشر يُخرج كل الجلسات المفتوحة، والجلسة تنتهي بعد 12 ساعة.
+- بعد 8 محاولات دخول خاطئة من نفس عنوان الإنترنت يتوقف الخادم عن قبولها 15 دقيقة. هذه حماية إضافية فقط، والحماية الأساسية كلمة مرور طويلة وعشوائية.
+- يحتاج تسجيل التعليق الصوتي إذن الميكروفون، وهو مسموح لصفحات موقعك فقط (`vercel.json`).
 
-### إضافة نموذج أو تغييره
-النماذج في `data/studio.json`. انسخ معرّف النموذج من صفحته في [fal.ai/models](https://fal.ai/models) (مثل `fal-ai/kling-video/...`)، واكتب الخيارات التي تريد إظهارها تحت `options`. الصيغة موضحة داخل الملف.
+### تغيير النماذج
+الإعدادات في `data/studio.json`: نموذج المحادثة السحابي، والنماذج المحلية وأحجامها، ونماذج الصور وأبعادها، وإعدادات الفيديو. النماذج المتاحة مجانًا في [كتالوج Workers AI](https://developers.cloudflare.com/workers-ai/models/)، وبعضها يتطلب خطة مدفوعة فتجنّبه.
 
-### حدود المحادثة
-مدة دالة الخادم 60 ثانية (`vercel.json`). إذا توقف رد طويل يظهر زر «أكمل». إن كان مشروعك يعمل بـ Fluid compute، وهو الافتراضي للمشاريع الجديدة، فيمكنك رفع `maxDuration` للدالة `api/studio.js` إلى 300 وإضافة المتغير `STUDIO_MAX_SECONDS=290`.
+### حدود المحادثة السحابية
+مدة دالة الخادم 60 ثانية (`vercel.json`). إذا توقف رد طويل يظهر زر «أكمل».
 
 ---
 
@@ -240,6 +249,7 @@ training-platform/
 │   ├── css/app.css       ← نظام التصميم (الألوان والمكونات)
 │   ├── js/app.js         ← اللغة، التخزين، الحسابات، الشريط العلوي، الإشعارات
 │   ├── js/auth.js        ← نافذة تسجيل الدخول / الحساب الجديد
+│   ├── js/studio-llm-worker.js ← تشغيل النموذج المحلي للاستوديو (WebLLM)
 │   ├── js/chat.js        ← واجهة المساعد الذكي
 │   ├── js/ui.js          ← مكونات مشتركة (الباقات، الشهادة، الآراء)
 │   ├── js/pages/*.js     ← منطق كل صفحة
@@ -248,7 +258,7 @@ training-platform/
 ├── studio.html           ← استوديو الذكاء الاصطناعي (للمالك فقط)
 ├── data/                 ← كل المحتوى القابل للتعديل (JSON)
 ├── api/chat.js           ← دالة Vercel للمساعد الذكي (Claude)
-├── api/studio.js         ← دالة Vercel للاستوديو: الدخول، Claude، وتوليد الصور والفيديو عبر fal.ai
+├── api/studio.js         ← دالة Vercel للاستوديو: الدخول، والنصوص والصور عبر Cloudflare Workers AI المجاني
 ├── vercel.json  package.json
 ```
 
@@ -272,6 +282,6 @@ training-platform/
 - **Edit content:** everything lives in `data/*.json` (`{ "ar": …, "en": … }` for every text); UI labels are in `data/i18n/`.
 - **Brand:** the name is always the Latin wordmark **AGILIX**, in both languages, never translated; the Arabic «أجيليكس» wordmark only accompanies it. Logo files live in `assets/img/` (`logo.svg`, `logo-white.svg`, `logo-bilingual.svg`, `logo-bilingual-white.svg`, `logo-ar.svg`, `logo-ar-white.svg`, `logo-mark.svg`, `favicon.svg`); colours in `site.json → theme`.
 - **Accounts:** the header “Sign in” / learner button opens a sign-in / create-account modal. Accounts live in `localStorage` (`academy.users.v1`, salted SHA-256 password hashes; `academy.session.v1`; per-user progress in `academy.state.v1:<id>`). After success the user is redirected to `dashboard.html`, or back to the page whose action required an account. Demo account: `demo@agilix.app` / `agilix2026`. These accounts are per-browser only: swap `signUp` / `signIn` / `signOut` in `assets/js/app.js` for a real auth service before launch.
-- **Owner studio (`studio.html`):** a hidden, password-protected AI workspace. Claude chat for course content (scripts, outlines, quiz JSON, posts), image generation (Nano Banana 2, Imagen 4) and video generation (Veo 3.1 Fast, text or image to video) through fal.ai, with a local library. Set `ADMIN_PASSWORD` (12+ characters), `ANTHROPIC_API_KEY` and `FAL_KEY` in Vercel and redeploy. All calls go through `api/studio.js` (HMAC-signed 12-hour tokens, model allowlist in `data/studio.json`, keys never reach the browser).
+- **Owner studio (`studio.html`), free of charge:** a hidden, password-protected AI workspace with no paid services. Text runs on the Cloudflare Workers AI free allowance (Gemma 4; 10,000 neurons a day, no card) or fully on-device with WebLLM (Qwen3, unlimited, needs WebGPU). Images use FLUX.2 klein / FLUX.1 schnell on the same free allowance. Videos are assembled in the browser from scenes (AI-written script, generated or uploaded images, captions, recorded or uploaded narration) and exported with MediaRecorder. Media is stored in IndexedDB. Set `ADMIN_PASSWORD`, `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (Workers AI → Use REST API) in Vercel and redeploy.
 - **Navigation:** logo + Home → `index.html`, Courses → `courses.html`, Pricing → `pricing.html`, Dashboard → `dashboard.html`, Contact → `contact.html` (relative links, also hard-coded in each HTML file).
 - **Before launch:** progress is stored in the visitor's browser; real accounts and payment-verified access need a backend (e.g. Supabase/Firebase + payment webhooks). Replace the sample testimonials, contact details and live links.
