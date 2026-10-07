@@ -489,7 +489,10 @@ function renderHead() {
         ${chip(S.features.cloud, t(S.features.cloud ? 'studio.service.cloudOn' : 'studio.service.cloudOff'))}
         ${chip(S.gpu, t(S.gpu ? 'studio.service.gpuOn' : 'studio.service.gpuOff'))}
       </div>
-      <button type="button" class="btn btn--ghost btn--sm" data-signout-studio>${icon('logout', 'flip-rtl')}${esc(t('studio.signout'))}</button>
+      <div class="row">
+        <button type="button" class="btn btn--ghost btn--sm" data-check-cloud>${icon('shield')}${esc(t('studio.check.button'))}</button>
+        <button type="button" class="btn btn--ghost btn--sm" data-signout-studio>${icon('logout', 'flip-rtl')}${esc(t('studio.signout'))}</button>
+      </div>
     </div>` : ''}
   </div>`;
 }
@@ -1478,6 +1481,52 @@ async function runTimeline({ record }) {
   return item;
 }
 
+/* ---------------------------------------------------- connection check */
+// Wrap technical values (ids, model names, codes) so they keep left-to-right order inside Arabic text.
+const ltr = (v) => (v ? `\u2066${v}\u2069` : v);
+
+function checkStepText(step, data) {
+  const p = step.problem;
+  if (step.id === 'password') return [t('studio.check.password'), t('studio.check.passwordOk')];
+  if (step.id === 'account') {
+    return [t('studio.check.account'), step.ok ? t('studio.check.accountOk', { hint: ltr(step.hint) || '' })
+      : p === 'format' ? t('studio.check.accountFormat', { hint: ltr(step.hint) || '—' }) : t('studio.check.missing', { name: ltr('CLOUDFLARE_ACCOUNT_ID') })];
+  }
+  if (step.id === 'token') {
+    return [t('studio.check.token'), step.ok ? t('studio.check.tokenOk')
+      : p === 'global_api_key' ? t('studio.check.globalKey') : p === 'token_whitespace' ? t('studio.check.whitespace') : t('studio.check.missing', { name: ltr('CLOUDFLARE_API_TOKEN') })];
+  }
+  const title = t('studio.check.live', { model: ltr(data.model) || '' });
+  if (step.ok) return [title, step.fallback ? t('studio.check.liveFallback', { model: ltr(step.model) }) : t('studio.check.liveOk')];
+  const key = `studio.check.fail.${p}`;
+  const text = t(key);
+  return [title, `${text === key ? t('studio.check.fail.provider_unavailable') : text}${step.code ? ` ${ltr(`(${step.code})`)}` : ''}${step.detail && text === key ? ` — ${step.detail}` : ''}`];
+}
+
+async function runCloudCheck(btn) {
+  btn.disabled = true;
+  btn.classList.add('is-busy');
+  try {
+    const data = await api('check', { method: 'GET' });
+    const rows = data.steps.map((step) => {
+      const [title, text] = checkStepText(step, data);
+      return `<li class="studio-check__step ${step.ok ? 'is-ok' : 'is-bad'}">${icon(step.ok ? 'check' : 'warning')}<div><b>${esc(title)}</b><p dir="auto">${esc(text)}</p></div></li>`;
+    }).join('');
+    openModal({
+      title: t(data.ok ? 'studio.check.allGood' : 'studio.check.problem'),
+      size: 'modal--lg',
+      body: `<ol class="studio-check">${rows}</ol><p class="studio-off studio-off--info">${icon('info')}<span>${esc(t('studio.check.redeploy'))}</span></p>`
+    });
+    // Only the variables decide whether the cloud is set up; a busy or used-up day doesn't.
+    const configured = data.steps.filter((step) => step.id !== 'live').every((step) => step.ok);
+    if (configured !== S.features.cloud) { S.features.cloud = configured; render(); }
+  } catch (err) {
+    if (err.code !== 'session') toast(errorText(err), 'error');
+  } finally {
+    if (btn.isConnected) { btn.disabled = false; btn.classList.remove('is-busy'); }
+  }
+}
+
 /* ------------------------------------------------------------- events */
 function moveScene(id, delta) {
   const list = S.video.scenes;
@@ -1724,6 +1773,8 @@ function bindEvents(root) {
 
   $('#studio-head')?.addEventListener('click', (e) => {
     if (e.target.closest('[data-signout-studio]')) endSession(false);
+    const checkBtn = e.target.closest('[data-check-cloud]');
+    if (checkBtn && !checkBtn.disabled) runCloudCheck(checkBtn);
   });
 }
 

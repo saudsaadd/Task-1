@@ -1,5 +1,6 @@
 // AI assistant widget. Streams answers from the /api/chat serverless function
-// (Claude). When the endpoint is unavailable (no API key, local preview) it answers
+// (Cloudflare Workers AI, free). When the endpoint is unavailable (not set up, the day's
+// free allowance used up, local preview) it answers
 // from the platform's own FAQ and course catalogue so the widget always works.
 import { app, data, t, tx, esc, icon, safeUrl, fmtPrice, $ } from './app.js';
 

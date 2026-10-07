@@ -1,20 +1,27 @@
-// Vercel serverless function: the platform's AI assistant.
-// POST /api/chat  { lang: "ar" | "en", messages: [{ role, content }] }
-// Streams plain-text answers from Claude, grounded in the JSON files in /data.
-// Needs the ANTHROPIC_API_KEY environment variable (Vercel → Settings → Environment Variables).
-// Without it the endpoint answers 503 and the widget falls back to offline FAQ answers.
-import Anthropic from '@anthropic-ai/sdk';
+// Vercel serverless function: the platform's AI assistant for visitors. Free of charge.
+// POST /api/chat  { lang: "ar" | "en", messages: [{ role, content }] }  → streamed plain text
+// GET  /api/chat                                                      → setup status (no secrets)
+// Answers come from the Cloudflare Workers AI free allowance, grounded in the JSON files in /data.
+// It uses the same variables as the studio (Vercel → Settings → Environment Variables):
+//   CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN
+// and the chat model set in data/studio.json (cloud.chatModel, with cloud.fallbackModel as backup).
+// Without the variables, or when the day's free allowance is used up, the endpoint answers with an
+// error status and the widget falls back to its offline FAQ answers.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const MODEL = process.env.CHAT_MODEL || 'claude-opus-5-5';
 const MAX_MESSAGES = 16;
 const MAX_CHARS = 2000;
+const MAX_TOKENS = 900;
 const RATE_LIMIT = Number(process.env.CHAT_RATE_LIMIT || 30); // requests per IP per window
 const RATE_WINDOW_MS = 10 * 60 * 1000;
+const TIME_BUDGET_MS = 55 * 1000;
+const CF_API = 'https://api.cloudflare.com/client/v4/accounts/';
+// Cloudflare error codes that mean "this model can't be used here": retry once on the fallback model.
+const MODEL_ERRORS = new Set([5007, 3042, 5035, 5018, 3041, 5016]);
 
-let client;
 let systemPrompt;
+let studioConfig;
 const hits = new Map();
 
 const pick = (v, lang = 'en') => (v && typeof v === 'object' ? v[lang] || v.en || v.ar || '' : String(v ?? ''));
@@ -22,6 +29,105 @@ const both = (v) => (v && typeof v === 'object' ? `${v.en || ''} / ${v.ar || ''}
 
 async function readData(file) {
   return JSON.parse(await readFile(path.join(process.cwd(), 'data', file), 'utf8'));
+}
+
+/* ------------------------------------------------- Cloudflare credentials */
+// Values pasted into Vercel often carry spaces, line breaks or quotes; strip them.
+const clean = (v) => String(v || '').trim().replace(/^["']|["']$/g, '').trim();
+
+function cloudSetup() {
+  const account = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const token = clean(process.env.CLOUDFLARE_API_TOKEN);
+  const missing = [];
+  const problems = [];
+  if (!account) missing.push('CLOUDFLARE_ACCOUNT_ID');
+  else if (!/^[0-9a-f]{32}$/i.test(account)) problems.push('account_id_format');
+  if (!token) missing.push('CLOUDFLARE_API_TOKEN');
+  else if (/^[0-9a-f]{37}$/i.test(token)) problems.push('global_api_key');
+  else if (/\s/.test(token)) problems.push('token_whitespace');
+  return { account, token, missing, problems, ready: !missing.length && !problems.length };
+}
+
+async function chatConfig() {
+  studioConfig ??= await readData('studio.json').catch(() => ({}));
+  const cloud = studioConfig.cloud || {};
+  return {
+    model: clean(process.env.CHAT_MODEL) || cloud.chatModel || '@cf/google/gemma-4-26b-a4b-it',
+    extra: process.env.CHAT_MODEL ? {} : cloud.extra || {},
+    fallback: cloud.fallbackModel || '',
+    fallbackExtra: cloud.fallbackExtra || {}
+  };
+}
+
+async function cfError(res) {
+  const text = await res.text().catch(() => '');
+  let code = 0;
+  let detail = text.slice(0, 300);
+  try {
+    const body = JSON.parse(text);
+    const first = body?.errors?.[0] || body?.error;
+    code = Number(first?.code) || 0;
+    detail = String(first?.message || (typeof body?.error === 'string' ? body.error : '') || detail).slice(0, 300);
+  } catch { /* not JSON */ }
+  return { status: res.status, code, detail };
+}
+
+/** Starts a streamed chat completion, moving to the fallback model if Cloudflare rejects the main one. */
+async function startCompletion(setup, messages, signal) {
+  const cfg = await chatConfig();
+  const attempts = [[cfg.model, cfg.extra], ...(cfg.fallback && cfg.fallback !== cfg.model ? [[cfg.fallback, cfg.fallbackExtra]] : [])];
+  let failure = null;
+  for (const [model, extra] of attempts) {
+    const res = await fetch(`${CF_API}${encodeURIComponent(setup.account)}/ai/v1/chat/completions`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${setup.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages, stream: true, max_tokens: MAX_TOKENS, ...extra }),
+      signal
+    });
+    if (res.ok) return { res };
+    failure = await cfError(res);
+    console.error('[api/chat]', model, failure.status, failure.code, failure.detail);
+    if (!MODEL_ERRORS.has(failure.code)) break;
+  }
+  return { failure };
+}
+
+function errorFor(failure) {
+  if (failure.code === 3036) return [429, 'quota_exhausted'];
+  if (failure.code === 3040 || failure.status === 429) return [429, 'rate_limited'];
+  if (MODEL_ERRORS.has(failure.code)) return [502, 'model_unavailable'];
+  if (failure.code === 7003 || failure.code === 7000) return [502, 'bad_account_id'];
+  if (failure.status === 401 || failure.status === 403) return [502, 'bad_token'];
+  return [502, 'assistant_unavailable'];
+}
+
+/** Removes <think>…</think> blocks from streamed text, even when a block opens and closes inside one chunk. */
+function stripThinkStream(state, text) {
+  let out = '';
+  while (text) {
+    if (state.inThink) {
+      const end = text.indexOf('</think>');
+      if (end < 0) return out;
+      state.inThink = false;
+      text = text.slice(end + 8);
+    } else {
+      const start = text.indexOf('<think>');
+      if (start < 0) { out += text; break; }
+      out += text.slice(0, start);
+      state.inThink = true;
+      text = text.slice(start + 7);
+    }
+  }
+  // Skip the blank lines models put between their reasoning and the answer.
+  if (!state.started) { out = out.replace(/^\s+/, ''); if (out) state.started = true; }
+  return out;
+}
+
+function deltaText(event) {
+  const choice = event?.choices?.[0];
+  if (typeof choice?.delta?.content === 'string') return choice.delta.content;
+  if (typeof event?.response === 'string') return event.response;
+  return '';
 }
 
 async function buildSystemPrompt() {
@@ -107,11 +213,17 @@ function originAllowed(req) {
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  const setup = cloudSetup();
+  if (req.method === 'GET') {
+    const cfg = await chatConfig();
+    return res.status(200).json({ ready: setup.ready, missing: setup.missing, problems: setup.problems, model: cfg.model, fallbackModel: cfg.fallback || null });
+  }
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'method_not_allowed' });
   }
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'assistant_not_configured' });
+  if (!setup.ready) return res.status(503).json({ error: 'assistant_not_configured', missing: setup.missing, problems: setup.problems });
   if (!originAllowed(req)) return res.status(403).json({ error: 'origin_not_allowed' });
 
   const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
@@ -121,54 +233,55 @@ export default async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   const messages = cleanMessages(body?.messages);
   if (!messages.length) return res.status(400).json({ error: 'invalid_messages' });
-  const lang = body?.lang === 'ar' ? 'ar' : 'en';
 
-  client ??= new Anthropic();
   const system = await buildSystemPrompt();
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; controller.abort(); }, TIME_BUDGET_MS);
+  // Headers go out with the first token, so a failed request can still answer with an error status.
+  const open = () => {
+    if (res.headersSent) return;
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', 'X-Accel-Buffering': 'no' });
+  };
 
   try {
-    const stream = client.beta.messages.stream({
-      model: MODEL,
-      max_tokens: 16000,
-      output_config: { effort: 'low' },
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-      messages
-    });
-
-    // Headers go out with the first token, so a failed request can still answer with an error status.
-    const open = () => {
-      if (res.headersSent) return;
-      res.writeHead(200, {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no'
-      });
-    };
-
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        open();
-        res.write(event.delta.text);
+    const { res: upstream, failure } = await startCompletion(setup, [{ role: 'system', content: system }, ...messages], controller.signal);
+    if (failure) {
+      const [status, error] = errorFor(failure);
+      return res.status(status).json({ error, code: failure.code || undefined });
+    }
+    const reader = upstream.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const think = { inThink: false, started: false };
+    let finish = null;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        let event;
+        try { event = JSON.parse(payload); } catch { continue; }
+        finish = event?.choices?.[0]?.finish_reason || finish;
+        const text = stripThinkStream(think, deltaText(event));
+        if (text) { open(); res.write(text); }
       }
     }
-    const final = await stream.finalMessage();
     open();
-    if (final.stop_reason === 'refusal') {
-      res.write(lang === 'ar'
-        ? '\n\nعذرًا، لا أستطيع المساعدة في هذا الطلب. يمكنك التواصل مع فريق الدعم من صفحة [تواصل معنا](contact.html).'
-        : "\n\nSorry, I can't help with that request. You can reach our support team on the [contact page](contact.html).");
-    } else if (final.stop_reason === 'max_tokens') {
-      res.write('…');
-    }
+    if (finish === 'length') res.write('…');
     res.end();
   } catch (err) {
-    const status = err instanceof Anthropic.RateLimitError ? 429
-      : err instanceof Anthropic.AuthenticationError ? 503
-      : err instanceof Anthropic.APIError ? 502 : 500;
-    console.error('[api/chat]', status, err?.message);
-    if (!res.headersSent) return res.status(status).json({ error: 'assistant_unavailable' });
+    if (timedOut && res.headersSent) { res.write('…'); return res.end(); }
+    console.error('[api/chat]', err?.message);
+    if (!res.headersSent) return res.status(502).json({ error: 'assistant_unavailable' });
     res.end();
+  } finally {
+    clearTimeout(timer);
   }
 }

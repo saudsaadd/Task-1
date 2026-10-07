@@ -1,40 +1,123 @@
 {
-  "_note": "Settings for the owner studio (studio.html). Everything here is free: cloud text and images run on the Cloudflare Workers AI free allowance (10,000 neurons a day, renewed at 00:00 UTC), local text runs on the owner's own device with WebLLM, and videos are assembled in the browser. The server only accepts the cloud models listed here.",
+  "_note": "Settings for the owner studio (studio.html). Everything here is free: cloud text and images run on the Cloudflare Workers AI free allowance (10,000 neurons a day, renewed at 00:00 UTC), local text runs on the owner's own device with WebLLM, and videos are assembled in the browser. The server only accepts the cloud models listed here. The site assistant (api/chat.js) uses the same cloud chat model; if Cloudflare reports the model as unavailable, both switch to fallbackModel.",
   "cloud": {
     "chatModel": "@cf/google/gemma-4-26b-a4b-it",
     "chatLabel": "Gemma 4 (Google)",
     "maxTokens": 4096,
-    "extra": { "chat_template_kwargs": { "enable_thinking": false } },
+    "extra": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "fallbackModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "fallbackExtra": {},
     "dailyNeurons": 10000
   },
   "local": {
     "models": [
-      { "id": "Qwen3-4B-q4f16_1-MLC", "label": { "ar": "Qwen3 4B (متوازن، موصى به)", "en": "Qwen3 4B (balanced, recommended)" }, "download": 2.3, "vram": 3.4 },
-      { "id": "Qwen3-1.7B-q4f16_1-MLC", "label": { "ar": "Qwen3 1.7B (خفيف وسريع)", "en": "Qwen3 1.7B (light and fast)" }, "download": 1.1, "vram": 2.0 },
-      { "id": "Qwen3-8B-q4f16_1-MLC", "label": { "ar": "Qwen3 8B (الأفضل، لأجهزة قوية)", "en": "Qwen3 8B (best, for strong devices)" }, "download": 4.6, "vram": 5.7 }
+      {
+        "id": "Qwen3-4B-q4f16_1-MLC",
+        "label": {
+          "ar": "Qwen3 4B (متوازن، موصى به)",
+          "en": "Qwen3 4B (balanced, recommended)"
+        },
+        "download": 2.3,
+        "vram": 3.4
+      },
+      {
+        "id": "Qwen3-1.7B-q4f16_1-MLC",
+        "label": {
+          "ar": "Qwen3 1.7B (خفيف وسريع)",
+          "en": "Qwen3 1.7B (light and fast)"
+        },
+        "download": 1.1,
+        "vram": 2.0
+      },
+      {
+        "id": "Qwen3-8B-q4f16_1-MLC",
+        "label": {
+          "ar": "Qwen3 8B (الأفضل، لأجهزة قوية)",
+          "en": "Qwen3 8B (best, for strong devices)"
+        },
+        "download": 4.6,
+        "vram": 5.7
+      }
     ]
   },
   "image": [
     {
       "id": "@cf/black-forest-labs/flux-2-klein-4b",
-      "label": { "ar": "FLUX.2 klein (جودة عالية)", "en": "FLUX.2 klein (high quality)" },
-      "hint": { "ar": "حوالي 95 صورة يوميًا من الحصة المجانية", "en": "About 95 images a day from the free allowance" },
+      "label": {
+        "ar": "FLUX.2 klein (جودة عالية)",
+        "en": "FLUX.2 klein (high quality)"
+      },
+      "hint": {
+        "ar": "حوالي 95 صورة يوميًا من الحصة المجانية",
+        "en": "About 95 images a day from the free allowance"
+      },
       "input": "multipart",
       "neurons": 105,
-      "sizes": { "16:9": [1024, 576], "9:16": [576, 1024], "1:1": [1024, 1024], "4:3": [1024, 768], "3:4": [768, 1024] }
+      "sizes": {
+        "16:9": [
+          1024,
+          576
+        ],
+        "9:16": [
+          576,
+          1024
+        ],
+        "1:1": [
+          1024,
+          1024
+        ],
+        "4:3": [
+          1024,
+          768
+        ],
+        "3:4": [
+          768,
+          1024
+        ]
+      }
     },
     {
       "id": "@cf/black-forest-labs/flux-1-schnell",
-      "label": { "ar": "FLUX.1 schnell (اقتصادي، مربّع)", "en": "FLUX.1 schnell (economical, square)" },
-      "hint": { "ar": "حوالي 170 صورة يوميًا، بأبعاد مربعة فقط", "en": "About 170 images a day, square only" },
+      "label": {
+        "ar": "FLUX.1 schnell (اقتصادي، مربّع)",
+        "en": "FLUX.1 schnell (economical, square)"
+      },
+      "hint": {
+        "ar": "حوالي 170 صورة يوميًا، بأبعاد مربعة فقط",
+        "en": "About 170 images a day, square only"
+      },
       "input": "json",
       "neurons": 58,
-      "params": { "steps": 4 },
-      "sizes": { "1:1": [1024, 1024] }
+      "params": {
+        "steps": 4
+      },
+      "sizes": {
+        "1:1": [
+          1024,
+          1024
+        ]
+      }
     }
   ],
   "video": {
-    "sizes": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [1080, 1080] },
+    "sizes": {
+      "16:9": [
+        1280,
+        720
+      ],
+      "9:16": [
+        720,
+        1280
+      ],
+      "1:1": [
+        1080,
+        1080
+      ]
+    },
     "fps": 30,
     "introSeconds": 2.5,
     "outroSeconds": 3,

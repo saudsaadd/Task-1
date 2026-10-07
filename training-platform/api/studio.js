@@ -9,6 +9,7 @@
 //   POST ?action=chat     { messages: [{ role, content }] }  → streamed plain text
 //   POST ?action=enhance  { prompt, kind: "image" | "video" }→ { prompt }
 //   POST ?action=image    { model, prompt, ratio, seed? }    → { image (base64), mime, width, height }
+//   GET  ?action=check                                       → step-by-step Cloudflare connection test
 // Every action except login needs "Authorization: Bearer <token>".
 //
 // Environment variables (Vercel → Project → Settings → Environment Variables):
@@ -53,7 +54,23 @@ function readBody(req) {
 
 const clientIp = (req) => String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 const pick = (v, lang = 'en') => (v && typeof v === 'object' ? v[lang] || v.en || v.ar || '' : String(v ?? ''));
-const cloudReady = () => !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
+// Values pasted into Vercel often carry spaces, line breaks or quotes; strip them.
+const clean = (v) => String(v || '').trim().replace(/^["']|["']$/g, '').trim();
+
+function cloudSetup() {
+  const account = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const token = clean(process.env.CLOUDFLARE_API_TOKEN);
+  const missing = [];
+  const problems = [];
+  if (!account) missing.push('CLOUDFLARE_ACCOUNT_ID');
+  else if (!/^[0-9a-f]{32}$/i.test(account)) problems.push('account_id_format');
+  if (!token) missing.push('CLOUDFLARE_API_TOKEN');
+  else if (/^[0-9a-f]{37}$/i.test(token)) problems.push('global_api_key');
+  else if (/\s/.test(token)) problems.push('token_whitespace');
+  return { account, token, missing, problems, ready: !missing.length && !problems.length };
+}
+const cloudReady = () => cloudSetup().ready;
+const notConfigured = (res) => { const { missing, problems } = cloudSetup(); return json(res, 503, { error: 'cloud_not_configured', missing, problems }); };
 const features = () => ({ cloud: cloudReady() });
 
 async function readData(file) {
@@ -121,10 +138,29 @@ async function login(req, res, body) {
 
 /* -------------------------------------------------------- Cloudflare calls */
 function cfFetch(pathname, init = {}) {
-  return fetch(`${CF_API}${encodeURIComponent(process.env.CLOUDFLARE_ACCOUNT_ID)}/ai/${pathname}`, {
+  const { account, token } = cloudSetup();
+  return fetch(`${CF_API}${encodeURIComponent(account)}/ai/${pathname}`, {
     ...init,
-    headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, ...(init.headers || {}) }
+    headers: { Authorization: `Bearer ${token}`, ...(init.headers || {}) }
   });
+}
+
+// Cloudflare error codes that mean "this model can't be used here": retry once on the fallback model.
+const MODEL_ERRORS = new Set([5007, 3042, 5035, 5018, 3041, 5016]);
+
+/** POSTs a chat completion, moving to the fallback model if Cloudflare rejects the main one. */
+async function chatCompletion(cfg, body, signal) {
+  const attempts = [[cfg.cloud.chatModel, cfg.cloud.extra || {}]];
+  if (cfg.cloud.fallbackModel && cfg.cloud.fallbackModel !== cfg.cloud.chatModel) attempts.push([cfg.cloud.fallbackModel, cfg.cloud.fallbackExtra || {}]);
+  let failed;
+  for (const [model, extra] of attempts) {
+    const res = await cfFetch('v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, ...body, ...extra }), signal });
+    if (res.ok) return { res, model };
+    failed = await cfError(res);
+    console.error('[api/studio] chat', model, failed.status, failed.code, failed.detail);
+    if (!MODEL_ERRORS.has(failed.code)) break;
+  }
+  return { failed };
 }
 
 // Workers AI answers errors either as { errors: [{ code, message }] } or { error: … }.
@@ -138,13 +174,15 @@ async function cfError(res) {
     code = Number(first?.code) || 0;
     detail = String(first?.message || (typeof body?.error === 'string' ? body.error : '') || detail).slice(0, 400);
   } catch { /* not JSON */ }
-  const quota = code === 3036 || /daily free allocation|neurons/i.test(detail);
+  const quota = code === 3036 || /daily free allocation/i.test(detail);
   const error = quota ? 'quota_exhausted'
-    : res.status === 401 || res.status === 403 ? 'provider_auth'
-      : res.status === 429 ? 'rate_limited'
-        : res.status === 400 || res.status === 422 ? 'provider_rejected' : 'provider_unavailable';
+    : MODEL_ERRORS.has(code) ? 'model_unavailable'
+      : code === 7003 || code === 7000 ? 'bad_account_id'
+        : res.status === 401 || res.status === 403 ? 'provider_auth'
+          : res.status === 429 ? 'rate_limited'
+            : res.status === 400 || res.status === 422 ? 'provider_rejected' : 'provider_unavailable';
   const status = error === 'quota_exhausted' || error === 'rate_limited' ? 429 : error === 'provider_rejected' ? 400 : 502;
-  return { status, error, detail };
+  return { status, error, detail, code };
 }
 
 async function buildChatSystem() {
@@ -186,6 +224,28 @@ function cleanMessages(input) {
 }
 
 /** Text of one streamed event, in either the OpenAI chunk shape or the classic Workers AI one. */
+/** Removes <think>…</think> blocks from streamed text, even when a block opens and closes inside one chunk. */
+function stripThinkStream(state, text) {
+  let out = '';
+  while (text) {
+    if (state.inThink) {
+      const end = text.indexOf('</think>');
+      if (end < 0) return out;
+      state.inThink = false;
+      text = text.slice(end + 8);
+    } else {
+      const start = text.indexOf('<think>');
+      if (start < 0) { out += text; break; }
+      out += text.slice(0, start);
+      state.inThink = true;
+      text = text.slice(start + 7);
+    }
+  }
+  // Skip the blank lines models put between their reasoning and the answer.
+  if (!state.started) { out = out.replace(/^\s+/, ''); if (out) state.started = true; }
+  return out;
+}
+
 function deltaText(event) {
   const choice = event?.choices?.[0];
   if (typeof choice?.delta?.content === 'string') return choice.delta.content;
@@ -196,7 +256,7 @@ function deltaText(event) {
 const stripThinking = (text) => text.replace(/<think>[\s\S]*?<\/think>\s*/g, '');
 
 async function chat(req, res, body) {
-  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
+  if (!cloudReady()) return notConfigured(res);
   const messages = cleanMessages(body.messages);
   if (!messages.length) return json(res, 400, { error: 'invalid_messages' });
   const cfg = await loadConfig();
@@ -211,29 +271,18 @@ async function chat(req, res, body) {
   };
 
   try {
-    const upstream = await cfFetch('v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: cfg.cloud.chatModel,
-        messages: [{ role: 'system', content: system }, ...messages],
-        stream: true,
-        max_tokens: cfg.cloud.maxTokens || 4096,
-        ...(cfg.cloud.extra || {})
-      }),
-      signal: controller.signal
-    });
-    if (!upstream.ok) {
-      const { status, error, detail } = await cfError(upstream);
-      console.error('[api/studio] chat', upstream.status, detail);
-      return json(res, status, { error, detail });
-    }
+    const { res: upstream, failed } = await chatCompletion(cfg, {
+      messages: [{ role: 'system', content: system }, ...messages],
+      stream: true,
+      max_tokens: cfg.cloud.maxTokens || 4096
+    }, controller.signal);
+    if (failed) return json(res, failed.status, { error: failed.error, detail: failed.detail, code: failed.code || undefined });
 
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let finish = null;
-    let inThink = false;
+    const think = { inThink: false, started: false };
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -248,15 +297,7 @@ async function chat(req, res, body) {
         let event;
         try { event = JSON.parse(payload); } catch { continue; }
         finish = event?.choices?.[0]?.finish_reason || finish;
-        let text = deltaText(event);
-        // Models that still emit <think> blocks: drop them from the visible answer.
-        if (text.includes('<think>')) { inThink = true; text = text.split('<think>')[0]; }
-        if (inThink) {
-          const end = text.indexOf('</think>');
-          if (end < 0) continue;
-          inThink = false;
-          text = text.slice(end + 8);
-        }
+        const text = stripThinkStream(think, deltaText(event));
         if (text) { open(); res.write(text); }
       }
     }
@@ -278,7 +319,7 @@ async function chat(req, res, body) {
 }
 
 async function enhance(req, res, body) {
-  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
+  if (!cloudReady()) return notConfigured(res);
   const kind = body.kind === 'video' ? 'video' : 'image';
   const brief = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, MAX_PROMPT_CHARS) : '';
   if (!brief) return json(res, 400, { error: 'empty_prompt' });
@@ -287,21 +328,11 @@ async function enhance(req, res, body) {
     ? 'You turn a short brief (often in Arabic) into one English prompt for an image that will be animated into a short video. Describe the subject, setting, composition, lighting, mood and style. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 90 words, no title, no quotes around it, no notes.'
     : 'You turn a short brief (often in Arabic) into one English prompt for a text-to-image model. Describe the subject, composition, setting, lighting, colour palette and style. Keep any text that must appear in the image short and in quotes. The brand name is always "AGILIX" in Latin letters. Answer with the prompt only: one paragraph, at most 90 words, no title, no quotes around it, no notes.';
   try {
-    const upstream = await cfFetch('v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: cfg.cloud.chatModel,
-        messages: [{ role: 'system', content: system }, { role: 'user', content: brief }],
-        max_tokens: 400,
-        ...(cfg.cloud.extra || {})
-      }),
-      signal: AbortSignal.timeout(45000)
-    });
-    if (!upstream.ok) {
-      const { status, error, detail } = await cfError(upstream);
-      return json(res, status, { error, detail });
-    }
+    const { res: upstream, failed } = await chatCompletion(cfg, {
+      messages: [{ role: 'system', content: system }, { role: 'user', content: brief }],
+      max_tokens: 400
+    }, AbortSignal.timeout(45000));
+    if (failed) return json(res, failed.status, { error: failed.error, detail: failed.detail });
     const data = await upstream.json();
     const raw = data?.choices?.[0]?.message?.content ?? data?.result?.response ?? data?.response ?? '';
     const prompt = stripThinking(String(raw)).trim().replace(/^["“]|["”]$/g, '');
@@ -321,7 +352,7 @@ function imageMime(b64) {
 }
 
 async function image(req, res, body) {
-  if (!cloudReady()) return json(res, 503, { error: 'cloud_not_configured' });
+  if (!cloudReady()) return notConfigured(res);
   const cfg = await loadConfig();
   const model = (cfg.image || []).find((m) => m.id === body.model);
   if (!model || !MODEL_RE.test(model.id)) return json(res, 400, { error: 'unknown_model' });
@@ -351,8 +382,8 @@ async function image(req, res, body) {
   try {
     const upstream = await cfFetch(`run/${model.id}`, { ...init, signal: AbortSignal.timeout(50000) });
     if (!upstream.ok) {
-      const { status, error, detail } = await cfError(upstream);
-      console.error('[api/studio] image', upstream.status, detail);
+      const { status, error, detail, code } = await cfError(upstream);
+      console.error('[api/studio] image', upstream.status, code, detail);
       return json(res, status, { error, detail });
     }
     const data = await upstream.json();
@@ -365,13 +396,41 @@ async function image(req, res, body) {
   }
 }
 
+/* -------------------------------------------------------- connection check */
+// A step-by-step test of the Cloudflare setup, shown in the studio. The live step
+// asks for a single token, so it costs next to nothing from the free allowance.
+async function check(req, res) {
+  const cfg = await loadConfig();
+  const setup = cloudSetup();
+  const steps = [];
+  const add = (id, ok, info = {}) => steps.push({ id, ok, ...info });
+  add('password', true);
+  add('account', !!setup.account && !setup.problems.includes('account_id_format'), { problem: !setup.account ? 'missing' : setup.problems.includes('account_id_format') ? 'format' : null, hint: setup.account ? `${setup.account.slice(0, 4)}…${setup.account.slice(-4)} (${setup.account.length})` : null });
+  add('token', !!setup.token && !setup.problems.includes('global_api_key') && !setup.problems.includes('token_whitespace'), { problem: !setup.token ? 'missing' : setup.problems.find((p) => p === 'global_api_key' || p === 'token_whitespace') || null });
+  if (!setup.ready) return json(res, 200, { ok: false, steps, model: cfg.cloud.chatModel });
+
+  let live;
+  try {
+    const { res: upstream, failed, model } = await chatCompletion(cfg, { messages: [{ role: 'user', content: 'Reply with: OK' }], max_tokens: 5 }, AbortSignal.timeout(30000));
+    live = failed
+      ? { ok: false, problem: failed.error, code: failed.code || null, detail: failed.detail }
+      : { ok: true, model, fallback: model !== cfg.cloud.chatModel };
+    if (upstream) await upstream.text().catch(() => '');
+  } catch (err) {
+    live = { ok: false, problem: 'network', detail: String(err?.message || '').slice(0, 200) };
+  }
+  add('live', live.ok, live);
+  return json(res, 200, { ok: live.ok, steps, model: cfg.cloud.chatModel, fallbackModel: cfg.cloud.fallbackModel || null });
+}
+
 /* ------------------------------------------------------------------ router */
 const ROUTES = {
   login: { method: 'POST', auth: false, run: login },
   session: { method: 'GET', run: (req, res) => json(res, 200, { features: features() }) },
   chat: { method: 'POST', run: chat },
   enhance: { method: 'POST', run: enhance },
-  image: { method: 'POST', run: image }
+  image: { method: 'POST', run: image },
+  check: { method: 'GET', run: check }
 };
 
 export default async function handler(req, res) {

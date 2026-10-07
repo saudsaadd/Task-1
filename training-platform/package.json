@@ -2,13 +2,12 @@
   "name": "training-platform",
   "version": "1.0.0",
   "private": true,
-  "description": "Bilingual (Arabic/English) training platform front-end with a 3D glass hero, quizzes, dashboard, certificates, checkout and an AI assistant. Static files + one Vercel function.",
+  "description": "Bilingual (Arabic/English) training platform front-end with a 3D glass hero, quizzes, dashboard, certificates, checkout, a free AI assistant and an owner studio (Cloudflare Workers AI free allowance). Static files + two Vercel functions, no dependencies.",
   "type": "module",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "preview": "npx --yes serve@14 . -l 3000"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0"
   }
 }

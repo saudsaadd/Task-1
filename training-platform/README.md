@@ -20,7 +20,7 @@
 | الأسعار | `pricing.html` | باقات شهرية/سنوية، شراء دورة منفردة، جدول مقارنة، ضمان الاسترداد |
 | الدفع | `checkout.html` | بيانات المشتري، طرق الدفع، رموز الخصم، الضريبة، ثم التحويل لصفحة الدفع الآمنة |
 | التواصل | `contact.html` | نموذج تواصل، قنوات الدعم، طلب تجربة/عرض توضيحي، أسئلة شائعة قابلة للبحث |
-| المساعد الذكي | يظهر في كل الصفحات | دردشة تعمل بـ Claude عبر `api/chat.js`، وتجيب من الأسئلة الشائعة إذا لم يُضبط المفتاح |
+| المساعد الذكي | يظهر في كل الصفحات | دردشة مجانية تعمل بحصة Cloudflare Workers AI عبر `api/chat.js`، وتجيب من الأسئلة الشائعة والدورات إذا لم يُضبط أو انتهت حصة اليوم |
 | الإشعارات | الجرس أعلى كل صفحة | إعلانات إدارية مع عدّاد غير المقروء وشريط إعلان مثبّت |
 | الحسابات | نافذة منبثقة في كل الصفحات | «تسجيل الدخول» و«حساب جديد» (الاسم، البريد، كلمة المرور) مع حفظ في `localStorage`، ثم تحويل تلقائي إلى لوحتي |
 | دليل الهوية | `brand.html` | الشعارات للتحميل، الألوان، الخطوط، قواعد الاستخدام |
@@ -75,18 +75,23 @@ npx vercel               # نشر تجريبي
 npx vercel --prod        # نشر نهائي
 ```
 
-### تفعيل المساعد الذكي (اختياري)
-في Vercel ← **Settings ← Environment Variables** أضف:
+### تفعيل المساعد الذكي (مجاني)
+المساعد الذي يظهر للزوار في كل الصفحات (`api/chat.js`) يعمل بنفس حصة Cloudflare المجانية التي يستخدمها الاستوديو، وبنفس المتغيرين. لا يحتاج أي مفتاح مدفوع.
 
 | المتغير | مطلوب؟ | الوصف |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | نعم، لتفعيل الذكاء الاصطناعي | مفتاح من [console.anthropic.com](https://console.anthropic.com) |
-| `CHAT_MODEL` | لا | النموذج المستخدم (الافتراضي `claude-opus-5-5`) |
-| `ALLOWED_ORIGINS` | لا | نطاقات مسموح لها باستخدام المساعد، مفصولة بفواصل، مثل `https://academy.example.com` |
+| `CLOUDFLARE_ACCOUNT_ID` | نعم | معرّف حسابك: Cloudflare ← Workers AI ← Use REST API ← Account ID (32 خانة) |
+| `CLOUDFLARE_API_TOKEN` | نعم | من نفس الصفحة: Create a Workers AI API Token |
+| `CHAT_MODEL` | لا | لتغيير نموذج المساعد فقط. الافتراضي هو `cloud.chatModel` في `data/studio.json` |
+| `ALLOWED_ORIGINS` | لا | نطاقات مسموح لها باستخدام المساعد، مفصولة بفواصل، مثل `https://www.agilix.space` |
 | `CHAT_RATE_LIMIT` | لا | عدد الرسائل لكل زائر كل 10 دقائق (الافتراضي 30) |
 
-ثم أعد النشر. بدون المفتاح يبقى المساعد يعمل في «وضع الإجابات السريعة» من ملف الأسئلة الشائعة والدورات.
-يقرأ المساعد محتوى `data/*.json` تلقائيًا (الدورات، الدروس، الباقات، الأسئلة الشائعة)، ولا يطّلع على إجابات الاختبارات.
+ثم أعد النشر (Deployments ← آخر نشر ← Redeploy)، فالمتغيرات لا تُطبَّق قبل ذلك.
+
+- **للتأكد من الإعداد:** افتح `www.agilix.space/api/chat` في المتصفح. ستظهر حالة الإعداد دون أي أسرار: `"ready": true` معناها أن كل شيء مضبوط، وإلا فستجد في `missing` أو `problems` اسم المتغير الناقص أو الخاطئ. وللاختبار الكامل مع اتصال فعلي استخدم زر «فحص الاتصال» في الاستوديو.
+- **النموذج:** `@cf/google/gemma-4-26b-a4b-it` (Gemma 4 من Google)، وإن رفضه Cloudflare لحسابك ينتقل تلقائيًا إلى البديل `@cf/qwen/qwen3-30b-a3b-fp8`. لا تستخدم أسماء قديمة مثل `@cf/meta/llama-3-8b-instruct`، فهي لم تعد في كتالوج Cloudflare الحالي.
+- **الحصة مشتركة:** المساعد والاستوديو يستهلكان نفس الحصة اليومية. إذا انتهت، أو لم يُضبط Cloudflare، يجيب المساعد تلقائيًا من الأسئلة الشائعة والدورات، فلا يتعطل أبدًا.
+- يقرأ المساعد محتوى `data/*.json` تلقائيًا (الدورات، الدروس، الباقات، الأسئلة الشائعة)، ولا يطّلع على إجابات الاختبارات.
 
 ### المعاينة على جهازك
 المتصفح لا يقرأ ملفات JSON عند فتح الصفحة مباشرة (`file://`)، لذلك شغّل خادمًا بسيطًا:
@@ -257,7 +262,7 @@ training-platform/
 ├── brand.html            ← دليل الهوية البصرية
 ├── studio.html           ← استوديو الذكاء الاصطناعي (للمالك فقط)
 ├── data/                 ← كل المحتوى القابل للتعديل (JSON)
-├── api/chat.js           ← دالة Vercel للمساعد الذكي (Claude)
+├── api/chat.js           ← دالة Vercel للمساعد الذكي (Cloudflare Workers AI المجاني)
 ├── api/studio.js         ← دالة Vercel للاستوديو: الدخول، والنصوص والصور عبر Cloudflare Workers AI المجاني
 ├── vercel.json  package.json
 ```
@@ -276,7 +281,7 @@ training-platform/
 
 ## English summary
 
-**AGILIX**: a complete bilingual (Arabic RTL / English LTR) training-platform front-end in a light brand theme (Agilix Blue #2E5BFF, Teal #14B8C4, Coral #FF6B3D, Ink #0E1630; Poppins + Tajawal; brand guide at `brand.html`): 3D glass-cube hero with chromatic dispersion and the logo inside the glass, course catalogue, course player (YouTube/Vimeo/MP4 + live sessions with countdown, join link, calendar and recordings), quiz engine (single/multiple/true-false/text, exam & practice modes, timer, partial credit, negative marking, grading scale, instant review), learner dashboard, certificate (print/PDF, LinkedIn), pricing & checkout (hosted payment links, demo mode otherwise), contact & FAQ, notifications and an AI assistant powered by Claude (`api/chat.js`, needs `ANTHROPIC_API_KEY`; falls back to FAQ answers).
+**AGILIX**: a complete bilingual (Arabic RTL / English LTR) training-platform front-end in a light brand theme (Agilix Blue #2E5BFF, Teal #14B8C4, Coral #FF6B3D, Ink #0E1630; Poppins + Tajawal; brand guide at `brand.html`): 3D glass-cube hero with chromatic dispersion and the logo inside the glass, course catalogue, course player (YouTube/Vimeo/MP4 + live sessions with countdown, join link, calendar and recordings), quiz engine (single/multiple/true-false/text, exam & practice modes, timer, partial credit, negative marking, grading scale, instant review), learner dashboard, certificate (print/PDF, LinkedIn), pricing & checkout (hosted payment links, demo mode otherwise), contact & FAQ, notifications and a free AI assistant on the Cloudflare Workers AI free allowance (`api/chat.js`, needs `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`; open `/api/chat` in a browser to see its setup status; falls back to FAQ answers).
 
 - **Deploy:** import the repo on Vercel with Root Directory `training-platform` and preset “Other”, or run `npx vercel --prod` inside the folder. No build step.
 - **Edit content:** everything lives in `data/*.json` (`{ "ar": …, "en": … }` for every text); UI labels are in `data/i18n/`.
